@@ -278,7 +278,11 @@ Output: { sessionDuration, sessionType, promptMessage, notificationUrgency }
 - [x] Journal screen (list view, empty state, entry cards)
 - [x] Journal entry screen (prompt selector, content input, mood tag, saves + streak)
 - [x] JournalProvider (Hive persistence)
-- [ ] Profile screen + visualizations (placeholder)
+- [x] Profile screen (user header, stats row, goal progress)
+- [x] StreakCalendar widget (30-day grid with completion status)
+- [x] MoodChart widget (7-day line chart using fl_chart)
+- [x] StreakProvider updated (Hive persistence, completed dates tracking)
+- [x] MoodProvider updated (Hive persistence, daily averages for chart)
 - [ ] Provider logic - Hive persistence (partial)
 - [ ] Firebase Auth + Firestore sync
 - [ ] Notification system
