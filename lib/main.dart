@@ -13,9 +13,7 @@ import 'providers/mood_provider.dart';
 import 'providers/session_provider.dart';
 import 'providers/streak_provider.dart';
 import 'features/onboarding/screens/onboarding_screen.dart';
-import 'features/home/screens/home_screen.dart';
-import 'features/journal/screens/journal_screen.dart';
-import 'features/profile/screens/profile_screen.dart';
+import 'features/home/screens/main_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,6 +42,12 @@ Future<void> main() async {
   await Hive.openBox(AppConstants.hiveBoxMoodLogs);
   await Hive.openBox(AppConstants.hiveBoxJournalEntries);
   await Hive.openBox(AppConstants.hiveBoxStreakData);
+
+  // UNCOMMENT TO CLEAR ALL HIVE DATA FOR TESTING ONBOARDING:
+   await Hive.box(AppConstants.hiveBoxUserProfile).clear();
+   await Hive.box(AppConstants.hiveBoxMoodLogs).clear();
+   await Hive.box(AppConstants.hiveBoxJournalEntries).clear();
+   await Hive.box(AppConstants.hiveBoxStreakData).clear();
 
   runApp(const StillspaceApp());
 }
@@ -82,62 +86,6 @@ class AppRouter extends StatelessWidget {
         }
         return const MainScreen();
       },
-    );
-  }
-}
-
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
-
-  @override
-  State<MainScreen> createState() => _MainScreenState();
-}
-
-class _MainScreenState extends State<MainScreen> {
-  int _currentIndex = 0;
-
-  final List<Widget> _screens = const [
-    HomeScreen(),
-    JournalListScreen(),
-    ProfileScreen(),
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<StreakProvider>().checkAndUpdateStreak();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book_outlined),
-            activeIcon: Icon(Icons.book),
-            label: 'Journal',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outlined),
-            activeIcon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-      ),
     );
   }
 }

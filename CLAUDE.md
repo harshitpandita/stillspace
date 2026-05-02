@@ -266,19 +266,30 @@ Output: { sessionDuration, sessionType, promptMessage, notificationUrgency }
 - Clean folder structure — never dump files in lib/ root except main.dart
 
 ## Current Build Status
-- [ ] Foundation (theme, main.dart, folder structure)
-- [ ] Onboarding flow
-- [ ] Home screen
+- [x] Foundation (theme, main.dart, folder structure)
+- [x] Firebase initialization working
+- [x] Onboarding flow (4 steps complete)
+- [x] MainScreen with bottom nav (Home, Journal, Profile)
+- [x] PrimaryActionButton widget
+- [ ] Home screen (placeholder)
 - [ ] Mood check-in screen
 - [ ] Session screen
-- [ ] Journal screen
-- [ ] Profile screen + visualizations
-- [ ] Provider logic (all 4)
-- [ ] Firebase integration
+- [ ] Journal screen (placeholder)
+- [ ] Profile screen + visualizations (placeholder)
+- [ ] Provider logic (all 4 - basic stubs exist)
+- [ ] Firebase Auth + Firestore sync
 - [ ] Notification system
 - [ ] Recommendation engine
 - [ ] Testing
 - [ ] Polish + APK
+
+## Testing Onboarding
+To reset and test onboarding again, uncomment the Hive clear lines in main.dart (around line 48-52)
+
+## Firebase Configuration
+- Firebase initialized with explicit FirebaseOptions in main.dart (NOT from google-services.json resource)
+- DO NOT change Firebase initialization back to Firebase.initializeApp() without options
+- google-services.json is in android/app/ but we use explicit options due to resource loading issues
 
 ## Git Rules (STRICT — never violate)
 - NEVER run any git commands automatically
