@@ -286,7 +286,7 @@ Output: { sessionDuration, sessionType, promptMessage, notificationUrgency }
 - [x] Notification system (daily reminders, follow-ups, context-aware messages)
 - [x] Settings screen (notification toggle, reminder time, goal edit, about)
 - [x] Firebase Auth + Firestore sync (Google Sign-In, auto-sync on data change)
-- [ ] Recommendation engine
+- [x] Recommendation engine (context-aware session suggestions on Home)
 - [ ] Testing
 - [ ] Polish + APK
 

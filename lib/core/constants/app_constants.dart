@@ -33,4 +33,12 @@ class AppConstants {
     'How are you feeling right now, and why?',
     'What would make tomorrow even better?',
   ];
+
+  static const List<String> lowMoodJournalPrompts = [
+    'What small thing could bring you comfort right now?',
+    'Write about how you\'re feeling without judgment.',
+    'What would you say to a friend feeling this way?',
+    'What is one thing within your control today?',
+    'Describe a moment when you felt at peace.',
+  ];
 }

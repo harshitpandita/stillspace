@@ -14,6 +14,7 @@ import 'providers/session_provider.dart';
 import 'providers/streak_provider.dart';
 import 'providers/journal_provider.dart';
 import 'services/notification_service.dart';
+import 'services/firebase_service.dart';
 import 'features/onboarding/screens/onboarding_screen.dart';
 import 'features/home/screens/main_screen.dart';
 
@@ -46,10 +47,17 @@ Future<void> main() async {
   await Hive.openBox(AppConstants.hiveBoxStreakData);
 
   // UNCOMMENT TO CLEAR ALL HIVE DATA FOR TESTING ONBOARDING:
-  await Hive.box(AppConstants.hiveBoxUserProfile).clear();
-  await Hive.box(AppConstants.hiveBoxMoodLogs).clear();
-  await Hive.box(AppConstants.hiveBoxJournalEntries).clear();
-  await Hive.box(AppConstants.hiveBoxStreakData).clear();
+  // await Hive.box(AppConstants.hiveBoxUserProfile).clear();
+  // await Hive.box(AppConstants.hiveBoxMoodLogs).clear();
+  // await Hive.box(AppConstants.hiveBoxJournalEntries).clear();
+  // await Hive.box(AppConstants.hiveBoxStreakData).clear();
+
+  // Sign out from Firebase if local data was cleared (fresh install or data wipe)
+  final isOnboardingComplete = Hive.box(AppConstants.hiveBoxUserProfile)
+      .get('isOnboardingComplete', defaultValue: false);
+  if (!isOnboardingComplete && FirebaseService().isSignedIn) {
+    await FirebaseService().signOut();
+  }
 
   await NotificationService().init();
 
