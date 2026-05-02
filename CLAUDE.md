@@ -271,12 +271,13 @@ Output: { sessionDuration, sessionType, promptMessage, notificationUrgency }
 - [x] Onboarding flow (4 steps complete)
 - [x] MainScreen with bottom nav (Home, Journal, Profile)
 - [x] PrimaryActionButton widget
-- [ ] Home screen (placeholder)
-- [ ] Mood check-in screen
-- [ ] Session screen
+- [x] SessionCard widget
+- [x] Home screen (greeting, streak card, mood prompt, session cards)
+- [x] Mood check-in screen (5 emoji selector, saves to provider)
+- [x] Session screen (timer with breathing animation, streak increment)
 - [ ] Journal screen (placeholder)
 - [ ] Profile screen + visualizations (placeholder)
-- [ ] Provider logic (all 4 - basic stubs exist)
+- [ ] Provider logic - Hive persistence (partial)
 - [ ] Firebase Auth + Firestore sync
 - [ ] Notification system
 - [ ] Recommendation engine
