@@ -42,6 +42,8 @@ class SettingsScreen extends StatelessWidget {
               _NotificationToggleTile(),
               const SizedBox(height: 12),
               _ReminderTimeTile(),
+              const SizedBox(height: 12),
+              _TestNotificationTile(),
               const SizedBox(height: 32),
               _buildSectionHeader('Goal'),
               const SizedBox(height: 12),
@@ -249,6 +251,88 @@ class _ReminderTimeTile extends StatelessWidget {
                   ? AppColors.textSecondary
                   : AppColors.textSecondary.withValues(alpha: 0.5),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TestNotificationTile extends StatefulWidget {
+  @override
+  State<_TestNotificationTile> createState() => _TestNotificationTileState();
+}
+
+class _TestNotificationTileState extends State<_TestNotificationTile> {
+  bool _isTesting = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final userProvider = context.watch<UserProvider>();
+
+    return GestureDetector(
+      onTap: userProvider.notificationsEnabled && !_isTesting
+          ? () async {
+              setState(() => _isTesting = true);
+              await NotificationService().scheduleTestNotification();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Test notification scheduled in 5 seconds'),
+                    backgroundColor: AppColors.surface,
+                    duration: Duration(seconds: 3),
+                  ),
+                );
+                await Future.delayed(const Duration(seconds: 6));
+                if (mounted) setState(() => _isTesting = false);
+              }
+            }
+          : null,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.notifications_active_outlined,
+              color: userProvider.notificationsEnabled
+                  ? AppColors.primary
+                  : AppColors.textSecondary,
+              size: 24,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Test Notification',
+                    style: AppTextStyles.body1.copyWith(
+                      color: userProvider.notificationsEnabled
+                          ? AppColors.textPrimary
+                          : AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _isTesting ? 'Sending...' : 'Tap to test in 5 seconds',
+                    style: AppTextStyles.caption,
+                  ),
+                ],
+              ),
+            ),
+            if (_isTesting)
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.primary,
+                ),
+              ),
           ],
         ),
       ),

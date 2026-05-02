@@ -287,7 +287,7 @@ Output: { sessionDuration, sessionType, promptMessage, notificationUrgency }
 - [x] Settings screen (notification toggle, reminder time, goal edit, about)
 - [x] Firebase Auth + Firestore sync (Google Sign-In, auto-sync on data change)
 - [x] Recommendation engine (context-aware session suggestions on Home)
-- [ ] Testing
+- [x] Testing (17 tests: PrimaryActionButton widget + RecommendationEngine unit)
 - [ ] Polish + APK
 
 ## Testing Onboarding

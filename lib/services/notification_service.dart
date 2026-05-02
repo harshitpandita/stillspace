@@ -14,9 +14,11 @@ class NotificationService {
   static const int _mainReminderId = 1;
   static const int _followUp1Id = 2;
   static const int _followUp2Id = 3;
+  static const int _testNotificationId = 99;
 
   Future<void> init() async {
     tz_data.initializeTimeZones();
+    _configureLocalTimeZone();
 
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const initSettings = InitializationSettings(android: androidSettings);
@@ -25,6 +27,37 @@ class NotificationService {
       initSettings,
       onDidReceiveNotificationResponse: _onNotificationTapped,
     );
+  }
+
+  void _configureLocalTimeZone() {
+    final now = DateTime.now();
+    final offsetInHours = now.timeZoneOffset.inHours;
+    final offsetMinutes = now.timeZoneOffset.inMinutes % 60;
+
+    String tzName;
+    if (offsetInHours >= 5 && offsetInHours <= 6 && offsetMinutes == 30) {
+      tzName = 'Asia/Kolkata';
+    } else if (offsetInHours == 0) {
+      tzName = 'UTC';
+    } else if (offsetInHours == -5) {
+      tzName = 'America/New_York';
+    } else if (offsetInHours == -8) {
+      tzName = 'America/Los_Angeles';
+    } else if (offsetInHours == 1) {
+      tzName = 'Europe/London';
+    } else if (offsetInHours == 8) {
+      tzName = 'Asia/Singapore';
+    } else if (offsetInHours == 9) {
+      tzName = 'Asia/Tokyo';
+    } else {
+      tzName = 'UTC';
+    }
+
+    try {
+      tz.setLocalLocation(tz.getLocation(tzName));
+    } catch (e) {
+      tz.setLocalLocation(tz.UTC);
+    }
   }
 
   Future<bool> requestPermissions() async {
@@ -199,5 +232,31 @@ class NotificationService {
     const details = NotificationDetails(android: androidDetails);
 
     await _notifications.show(0, title, body, details);
+  }
+
+  Future<void> scheduleTestNotification() async {
+    final scheduledDate = tz.TZDateTime.now(tz.local).add(const Duration(seconds: 5));
+
+    const androidDetails = AndroidNotificationDetails(
+      'stillspace_reminders',
+      'Daily Reminders',
+      channelDescription: 'Reminders for your mindfulness practice',
+      importance: Importance.high,
+      priority: Priority.high,
+      icon: '@mipmap/ic_launcher',
+    );
+
+    const details = NotificationDetails(android: androidDetails);
+
+    await _notifications.zonedSchedule(
+      _testNotificationId,
+      'Test Notification',
+      'If you see this, notifications are working!',
+      scheduledDate,
+      details,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+    );
   }
 }
