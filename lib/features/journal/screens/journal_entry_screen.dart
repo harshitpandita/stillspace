@@ -1,4 +1,4 @@
-// Journal entry screen - create new journal entry with prompt selection
+// Journal entry screen - create new journal entry with optional prompt
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -18,14 +18,15 @@ class JournalEntryScreen extends StatefulWidget {
 
 class _JournalEntryScreenState extends State<JournalEntryScreen> {
   final TextEditingController _contentController = TextEditingController();
-  late String _selectedPrompt;
+  late String _suggestedPrompt;
+  bool _usePrompt = true;
   int? _selectedMood;
   bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    _selectedPrompt = _getRandomPrompt();
+    _suggestedPrompt = _getRandomPrompt();
   }
 
   @override
@@ -52,13 +53,6 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
         ),
         title: const Text('New Entry', style: AppTextStyles.headline3),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.shuffle, color: AppColors.textSecondary),
-            onPressed: () => setState(() => _selectedPrompt = _getRandomPrompt()),
-            tooltip: 'New prompt',
-          ),
-        ],
       ),
       body: SafeArea(
         child: LayoutBuilder(
@@ -71,26 +65,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.lightbulb_outline, color: AppColors.primary, size: 20),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                _selectedPrompt,
-                                style: AppTextStyles.body1.copyWith(color: AppColors.primary),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      _buildPromptSection(),
                       const SizedBox(height: 24),
                       TextField(
                         controller: _contentController,
@@ -99,7 +74,9 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                         minLines: 8,
                         textCapitalization: TextCapitalization.sentences,
                         decoration: InputDecoration(
-                          hintText: 'Write your thoughts...',
+                          hintText: _usePrompt
+                              ? 'Write your thoughts...'
+                              : 'What\'s on your mind?',
                           hintStyle: AppTextStyles.body2,
                           filled: true,
                           fillColor: AppColors.surface,
@@ -169,6 +146,69 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
     );
   }
 
+  Widget _buildPromptSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Suggested prompt',
+              style: AppTextStyles.label.copyWith(color: AppColors.textSecondary),
+            ),
+            const Spacer(),
+            GestureDetector(
+              onTap: () => setState(() => _usePrompt = !_usePrompt),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: _usePrompt ? AppColors.primary : AppColors.surface,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  _usePrompt ? 'On' : 'Off',
+                  style: AppTextStyles.caption.copyWith(
+                    color: _usePrompt ? AppColors.background : AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (_usePrompt) ...[
+          const SizedBox(height: 12),
+          GestureDetector(
+            onTap: () => setState(() => _suggestedPrompt = _getRandomPrompt()),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.lightbulb_outline, color: AppColors.primary, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      _suggestedPrompt,
+                      style: AppTextStyles.body1.copyWith(color: AppColors.primary),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.shuffle, color: AppColors.primary, size: 18),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
   Future<void> _saveEntry() async {
     if (_contentController.text.trim().isEmpty) return;
 
@@ -179,7 +219,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
     final navigator = Navigator.of(context);
 
     await journalProvider.addEntry(
-      prompt: _selectedPrompt,
+      prompt: _usePrompt ? _suggestedPrompt : 'Free write',
       content: _contentController.text.trim(),
       moodScore: _selectedMood,
     );
