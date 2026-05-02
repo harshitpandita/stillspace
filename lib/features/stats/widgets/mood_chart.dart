@@ -122,10 +122,12 @@ class MoodChart extends StatelessWidget {
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
+              interval: 1,
               reservedSize: 30,
               getTitlesWidget: (value, meta) {
                 final index = value.toInt();
-                if (index < 0 || index >= labels.length) return const SizedBox();
+                if (value != index.toDouble()) return const SizedBox();
+                if (index < 0 || index > 6) return const SizedBox();
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
