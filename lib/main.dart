@@ -12,6 +12,7 @@ import 'providers/user_provider.dart';
 import 'providers/mood_provider.dart';
 import 'providers/session_provider.dart';
 import 'providers/streak_provider.dart';
+import 'providers/journal_provider.dart';
 import 'features/onboarding/screens/onboarding_screen.dart';
 import 'features/home/screens/main_screen.dart';
 
@@ -63,6 +64,7 @@ class StillspaceApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => MoodProvider()..init()),
         ChangeNotifierProvider(create: (_) => SessionProvider()..init()),
         ChangeNotifierProvider(create: (_) => StreakProvider()..init()),
+        ChangeNotifierProvider(create: (_) => JournalProvider()..init()),
       ],
       child: MaterialApp(
         title: AppConstants.appName,

@@ -275,7 +275,9 @@ Output: { sessionDuration, sessionType, promptMessage, notificationUrgency }
 - [x] Home screen (greeting, streak card, mood prompt, session cards)
 - [x] Mood check-in screen (5 emoji selector, saves to provider)
 - [x] Session screen (timer with breathing animation, streak increment)
-- [ ] Journal screen (placeholder)
+- [x] Journal screen (list view, empty state, entry cards)
+- [x] Journal entry screen (prompt selector, content input, mood tag, saves + streak)
+- [x] JournalProvider (Hive persistence)
 - [ ] Profile screen + visualizations (placeholder)
 - [ ] Provider logic - Hive persistence (partial)
 - [ ] Firebase Auth + Firestore sync
