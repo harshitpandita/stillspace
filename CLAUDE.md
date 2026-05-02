@@ -1,7 +1,20 @@
 # Stillspace — Flutter Mental Wellness App
 
+CRITICAL RULE — add this to your memory permanently:
+
+Never write, edit, or touch any file outside of C:/stillspace/
+All app code lives under C:/stillspace/lib/ only.
+If you ever need to create a file, verify the full path starts with C:/stillspace/
+Flutter SDK at C:/flutter/ is read-only — never modify anything there.
+Before creating any file, print the full absolute path and confirm it is inside C:/stillspace/
 ## Project Overview
 A dark-themed mental wellness app focused on daily consistency through meditation and journaling. Inspired by Medito (calm), Let's Meditate (simple UI), Duolingo (streak/gamification), and Gratitude (journaling).
+
+## CRITICAL PATH RULE
+NEVER write to any path outside C:/stillspace/
+All files must be under C:/stillspace/lib/
+C:/flutter/ is READ-ONLY — never modify SDK files
+Always verify absolute path before creating any file
 
 ## Tech Stack
 - **Framework**: Flutter (Android target)

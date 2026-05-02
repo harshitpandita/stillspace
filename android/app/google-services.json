@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "706859686171",
+    "project_id": "stillspace-670ef",
+    "storage_bucket": "stillspace-670ef.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:706859686171:android:cf7082380ac8a62d38dbbe",
+        "android_client_info": {
+          "package_name": "com.harshitpandita.stillspace"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "706859686171-rqci90ucits93inpt1169uhosr1kegr8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.harshitpandita.stillspace",
+            "certificate_hash": "2d36a7b2e7d99a445e0afd07631864c05f39ace6"
+          }
+        },
+        {
+          "client_id": "706859686171-nefra5qeqjtt72112s6tegrl91nblai1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCyu06SXeik4yMge3wkgfWZ5RKHgthKZ6k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "706859686171-nefra5qeqjtt72112s6tegrl91nblai1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

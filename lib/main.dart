@@ -29,7 +29,15 @@ Future<void> main() async {
     ),
   );
 
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: const FirebaseOptions(
+      apiKey: 'AIzaSyCyu06SXeik4yMge3wkgfWZ5RKHgthKZ6k',
+      appId: '1:706859686171:android:cf7082380ac8a62d38dbbe',
+      messagingSenderId: '706859686171',
+      projectId: 'stillspace-670ef',
+      storageBucket: 'stillspace-670ef.firebasestorage.app',
+    ),
+  );
 
   await Hive.initFlutter();
   await Hive.openBox(AppConstants.hiveBoxUserProfile);
