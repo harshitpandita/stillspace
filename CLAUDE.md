@@ -283,9 +283,10 @@ Output: { sessionDuration, sessionType, promptMessage, notificationUrgency }
 - [x] MoodChart widget (7-day line chart using fl_chart)
 - [x] StreakProvider updated (Hive persistence, completed dates tracking)
 - [x] MoodProvider updated (Hive persistence, daily averages for chart)
+- [x] Notification system (daily reminders, follow-ups, context-aware messages)
+- [x] Settings screen (notification toggle, reminder time, goal edit, about)
 - [ ] Provider logic - Hive persistence (partial)
 - [ ] Firebase Auth + Firestore sync
-- [ ] Notification system
 - [ ] Recommendation engine
 - [ ] Testing
 - [ ] Polish + APK

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../providers/streak_provider.dart';
+import '../../../services/notification_service.dart';
 import '../../../widgets/primary_action_button.dart';
 
 class SessionScreen extends StatefulWidget {
@@ -70,6 +71,7 @@ class _SessionScreenState extends State<SessionScreen> with SingleTickerProvider
       _isComplete = true;
     });
     await context.read<StreakProvider>().incrementStreak();
+    await NotificationService().cancelFollowUpNotifications();
   }
 
   String _formatTime(int seconds) {

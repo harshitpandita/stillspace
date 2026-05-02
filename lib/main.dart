@@ -13,6 +13,7 @@ import 'providers/mood_provider.dart';
 import 'providers/session_provider.dart';
 import 'providers/streak_provider.dart';
 import 'providers/journal_provider.dart';
+import 'services/notification_service.dart';
 import 'features/onboarding/screens/onboarding_screen.dart';
 import 'features/home/screens/main_screen.dart';
 
@@ -45,10 +46,12 @@ Future<void> main() async {
   await Hive.openBox(AppConstants.hiveBoxStreakData);
 
   // UNCOMMENT TO CLEAR ALL HIVE DATA FOR TESTING ONBOARDING:
-   await Hive.box(AppConstants.hiveBoxUserProfile).clear();
-   await Hive.box(AppConstants.hiveBoxMoodLogs).clear();
-   await Hive.box(AppConstants.hiveBoxJournalEntries).clear();
-   await Hive.box(AppConstants.hiveBoxStreakData).clear();
+  // await Hive.box(AppConstants.hiveBoxUserProfile).clear();
+  // await Hive.box(AppConstants.hiveBoxMoodLogs).clear();
+  // await Hive.box(AppConstants.hiveBoxJournalEntries).clear();
+  // await Hive.box(AppConstants.hiveBoxStreakData).clear();
+
+  await NotificationService().init();
 
   runApp(const StillspaceApp());
 }

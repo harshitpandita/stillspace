@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../providers/streak_provider.dart';
+import '../../../providers/user_provider.dart';
+import '../../../services/notification_service.dart';
 import 'home_screen.dart';
 import '../../journal/screens/journal_screen.dart';
 import '../../profile/screens/profile_screen.dart';
@@ -28,7 +30,25 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<StreakProvider>().checkAndUpdateStreak();
+      _scheduleNotifications();
     });
+  }
+
+  Future<void> _scheduleNotifications() async {
+    final userProvider = context.read<UserProvider>();
+    final streakProvider = context.read<StreakProvider>();
+
+    if (!userProvider.notificationsEnabled) {
+      await NotificationService().cancelAllNotifications();
+      return;
+    }
+
+    await NotificationService().scheduleDailyReminder(
+      time: userProvider.notificationTime,
+      currentStreak: streakProvider.currentStreak,
+      daysLeftToGoal: streakProvider.daysLeftToGoal,
+      missedYesterday: streakProvider.missedYesterday,
+    );
   }
 
   @override

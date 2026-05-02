@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../providers/user_provider.dart';
+import '../../../services/notification_service.dart';
 import '../../../widgets/primary_action_button.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -268,6 +269,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+  Future<void> _requestPermissionsAndContinue() async {
+    await NotificationService().requestPermissions();
+    _nextStep();
+  }
+
   Widget _buildTimeStep() {
     return Padding(
       padding: const EdgeInsets.all(24),
@@ -329,7 +335,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
           ),
           const Spacer(),
-          PrimaryActionButton(label: 'Continue', onPressed: _nextStep),
+          PrimaryActionButton(label: 'Continue', onPressed: _requestPermissionsAndContinue),
           const SizedBox(height: 16),
         ],
       ),

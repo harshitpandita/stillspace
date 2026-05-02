@@ -7,6 +7,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../providers/journal_provider.dart';
 import '../../../providers/streak_provider.dart';
+import '../../../services/notification_service.dart';
 import '../../../widgets/primary_action_button.dart';
 
 class JournalEntryScreen extends StatefulWidget {
@@ -225,6 +226,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
     );
 
     await streakProvider.incrementStreak();
+    await NotificationService().cancelFollowUpNotifications();
 
     if (mounted) {
       navigator.pop();

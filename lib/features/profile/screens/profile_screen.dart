@@ -8,6 +8,7 @@ import '../../../providers/streak_provider.dart';
 import '../../../providers/journal_provider.dart';
 import '../../stats/widgets/streak_calendar.dart';
 import '../../stats/widgets/mood_chart.dart';
+import '../../settings/screens/settings_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -27,7 +28,7 @@ class ProfileScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              _buildHeader(userProvider),
+              _buildHeader(context, userProvider),
               const SizedBox(height: 24),
               _buildStatsRow(streakProvider, journalProvider),
               const SizedBox(height: 24),
@@ -44,7 +45,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(UserProvider userProvider) {
+  Widget _buildHeader(BuildContext context, UserProvider userProvider) {
     return Row(
       children: [
         Container(
@@ -79,6 +80,14 @@ class ProfileScreen extends StatelessWidget {
               ),
             ],
           ),
+        ),
+        IconButton(
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            );
+          },
+          icon: const Icon(Icons.settings_outlined, color: AppColors.textSecondary),
         ),
       ],
     );
