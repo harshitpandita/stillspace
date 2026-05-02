@@ -1,4 +1,4 @@
-// Settings screen - notification toggle, reminder time, about
+// Settings screen - account, notifications, goal, about
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
@@ -6,7 +6,10 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../providers/user_provider.dart';
 import '../../../providers/streak_provider.dart';
+import '../../../providers/mood_provider.dart';
+import '../../../providers/journal_provider.dart';
 import '../../../services/notification_service.dart';
+import '../../../services/firebase_service.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -30,6 +33,10 @@ class SettingsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _buildSectionHeader('Account'),
+              const SizedBox(height: 12),
+              const _AccountTile(),
+              const SizedBox(height: 32),
               _buildSectionHeader('Notifications'),
               const SizedBox(height: 12),
               _NotificationToggleTile(),
@@ -356,5 +363,190 @@ class _GoalDaysTile extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+class _AccountTile extends StatefulWidget {
+  const _AccountTile();
+
+  @override
+  State<_AccountTile> createState() => _AccountTileState();
+}
+
+class _AccountTileState extends State<_AccountTile> {
+  bool _isLoading = false;
+  bool _isSyncing = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final firebaseService = FirebaseService();
+    final isSignedIn = firebaseService.isSignedIn;
+    final user = firebaseService.currentUser;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: isSignedIn && user?.photoURL != null
+                    ? ClipOval(
+                        child: Image.network(
+                          user!.photoURL!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const Icon(
+                            Icons.person,
+                            color: AppColors.primary,
+                            size: 24,
+                          ),
+                        ),
+                      )
+                    : const Icon(Icons.person, color: AppColors.primary, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isSignedIn ? (user?.displayName ?? 'Signed In') : 'Not signed in',
+                      style: AppTextStyles.body1,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      isSignedIn
+                          ? (user?.email ?? 'Backup enabled')
+                          : 'Sign in to backup your data',
+                      style: AppTextStyles.caption,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (isSignedIn) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: _buildActionButton(
+                    icon: Icons.sync,
+                    label: _isSyncing ? 'Syncing...' : 'Sync Now',
+                    onTap: _isSyncing ? null : _syncData,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildActionButton(
+                    icon: Icons.logout,
+                    label: 'Sign Out',
+                    onTap: _signOut,
+                    isDestructive: true,
+                  ),
+                ),
+              ],
+            ),
+          ] else
+            _buildActionButton(
+              icon: Icons.login,
+              label: _isLoading ? 'Signing in...' : 'Sign in with Google',
+              onTap: _isLoading ? null : _signIn,
+              fullWidth: true,
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback? onTap,
+    bool isDestructive = false,
+    bool fullWidth = false,
+  }) {
+    final color = isDestructive ? AppColors.error : AppColors.primary;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: fullWidth ? MainAxisSize.max : MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 18),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: AppTextStyles.label.copyWith(color: color),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _signIn() async {
+    setState(() => _isLoading = true);
+
+    final user = await FirebaseService().signInWithGoogle();
+
+    if (user != null && mounted) {
+      await FirebaseService().syncAllDataFromCloud();
+      _refreshProviders();
+    }
+
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _signOut() async {
+    await FirebaseService().signOut();
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> _syncData() async {
+    setState(() => _isSyncing = true);
+
+    await FirebaseService().syncAllDataToCloud();
+
+    if (mounted) {
+      setState(() => _isSyncing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Data synced successfully'),
+          backgroundColor: AppColors.surface,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  void _refreshProviders() {
+    context.read<UserProvider>().init();
+    context.read<StreakProvider>().init();
+    context.read<MoodProvider>().init();
+    context.read<JournalProvider>().init();
   }
 }

@@ -1,8 +1,9 @@
-// JournalProvider - manages journal entries, persists to Hive
+// JournalProvider - manages journal entries, persists to Hive, syncs to Firebase
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../core/constants/app_constants.dart';
 import '../features/journal/models/journal_entry.dart';
+import '../services/firebase_service.dart';
 
 class JournalProvider extends ChangeNotifier {
   List<JournalEntry> _entries = [];
@@ -48,12 +49,14 @@ class JournalProvider extends ChangeNotifier {
     _entries.add(entry);
     await _saveToHive();
     notifyListeners();
+    FirebaseService().syncOnChange();
   }
 
   Future<void> deleteEntry(String id) async {
     _entries.removeWhere((e) => e.id == id);
     await _saveToHive();
     notifyListeners();
+    FirebaseService().syncOnChange();
   }
 
   bool get hasEntryToday {

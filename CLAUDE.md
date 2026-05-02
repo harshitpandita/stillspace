@@ -285,8 +285,7 @@ Output: { sessionDuration, sessionType, promptMessage, notificationUrgency }
 - [x] MoodProvider updated (Hive persistence, daily averages for chart)
 - [x] Notification system (daily reminders, follow-ups, context-aware messages)
 - [x] Settings screen (notification toggle, reminder time, goal edit, about)
-- [ ] Provider logic - Hive persistence (partial)
-- [ ] Firebase Auth + Firestore sync
+- [x] Firebase Auth + Firestore sync (Google Sign-In, auto-sync on data change)
 - [ ] Recommendation engine
 - [ ] Testing
 - [ ] Polish + APK

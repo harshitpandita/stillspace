@@ -1,7 +1,8 @@
-// StreakProvider - manages streak data, freeze system, daily checks, Hive persistence
+// StreakProvider - manages streak data, freeze system, daily checks, Hive persistence, Firebase sync
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../core/constants/app_constants.dart';
+import '../services/firebase_service.dart';
 
 class StreakProvider extends ChangeNotifier {
   int _currentStreak = 0;
@@ -105,12 +106,11 @@ class StreakProvider extends ChangeNotifier {
 
     _lastCompletedDate = today;
 
-    if (_goalStartDate == null) {
-      _goalStartDate = today;
-    }
+    _goalStartDate ??= today;
 
     await _saveToHive();
     notifyListeners();
+    FirebaseService().syncOnChange();
   }
 
   Future<void> applyFreeze() async {
@@ -123,6 +123,7 @@ class StreakProvider extends ChangeNotifier {
 
     await _saveToHive();
     notifyListeners();
+    FirebaseService().syncOnChange();
   }
 
   bool isDateCompleted(DateTime date) {

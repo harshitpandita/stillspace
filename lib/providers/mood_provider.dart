@@ -1,7 +1,8 @@
-// MoodProvider - manages mood logs, check-in logic, 2hr rule, Hive persistence
+// MoodProvider - manages mood logs, check-in logic, 2hr rule, Hive persistence, Firebase sync
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../core/constants/app_constants.dart';
+import '../services/firebase_service.dart';
 
 class MoodProvider extends ChangeNotifier {
   List<Map<String, dynamic>> _moodLogs = [];
@@ -114,6 +115,7 @@ class MoodProvider extends ChangeNotifier {
 
     await _saveToHive();
     notifyListeners();
+    FirebaseService().syncOnChange();
   }
 
   String _dateKey(DateTime date) {

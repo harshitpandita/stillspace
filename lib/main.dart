@@ -46,10 +46,10 @@ Future<void> main() async {
   await Hive.openBox(AppConstants.hiveBoxStreakData);
 
   // UNCOMMENT TO CLEAR ALL HIVE DATA FOR TESTING ONBOARDING:
-  // await Hive.box(AppConstants.hiveBoxUserProfile).clear();
-  // await Hive.box(AppConstants.hiveBoxMoodLogs).clear();
-  // await Hive.box(AppConstants.hiveBoxJournalEntries).clear();
-  // await Hive.box(AppConstants.hiveBoxStreakData).clear();
+  await Hive.box(AppConstants.hiveBoxUserProfile).clear();
+  await Hive.box(AppConstants.hiveBoxMoodLogs).clear();
+  await Hive.box(AppConstants.hiveBoxJournalEntries).clear();
+  await Hive.box(AppConstants.hiveBoxStreakData).clear();
 
   await NotificationService().init();
 
