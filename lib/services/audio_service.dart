@@ -1,4 +1,4 @@
-// Audio service - manages ambient sounds for meditation sessions using local assets
+// Audio service - manages ambient sounds and bell for meditation sessions
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -13,18 +13,21 @@ class AudioService {
   factory AudioService() => _instance;
   AudioService._internal();
 
-  final AudioPlayer _player = AudioPlayer();
+  final AudioPlayer _ambientPlayer = AudioPlayer();
+  final AudioPlayer _bellPlayer = AudioPlayer();
   MeditationSound _currentSound = MeditationSound.none;
   double _volume = 0.5;
 
   MeditationSound get currentSound => _currentSound;
   double get volume => _volume;
-  bool get isPlaying => _player.playing;
+  bool get isPlaying => _ambientPlayer.playing;
 
   static const Map<MeditationSound, String> _soundAssets = {
     MeditationSound.focus: 'assets/audio/2.5-hz-focus.mp3',
     MeditationSound.relax: 'assets/audio/brown-noise-relaxing.mp3',
   };
+
+  static const String _bellAsset = 'assets/audio/bell-sound.mp3';
 
   static String getSoundName(MeditationSound sound) {
     switch (sound) {
@@ -59,6 +62,23 @@ class AudioService {
     }
   }
 
+  Future<void> playBell() async {
+    try {
+      await _bellPlayer.setAsset(_bellAsset);
+      await _bellPlayer.setLoopMode(LoopMode.off);
+      await _bellPlayer.setVolume(0.8);
+      await _bellPlayer.seek(Duration.zero);
+      await _bellPlayer.play();
+      debugPrint('AudioService: Playing bell');
+    } catch (e) {
+      debugPrint('AudioService: Error playing bell - $e');
+    }
+  }
+
+  Future<void> stopBell() async {
+    await _bellPlayer.stop();
+  }
+
   Future<void> playSound(MeditationSound sound) async {
     _currentSound = sound;
 
@@ -72,11 +92,11 @@ class AudioService {
 
     try {
       debugPrint('AudioService: Loading $sound from $assetPath');
-      await _player.setAsset(assetPath);
-      await _player.setLoopMode(LoopMode.one);
-      await _player.setVolume(_volume);
+      await _ambientPlayer.setAsset(assetPath);
+      await _ambientPlayer.setLoopMode(LoopMode.one);
+      await _ambientPlayer.setVolume(_volume);
       debugPrint('AudioService: Playing $sound at volume $_volume');
-      await _player.play();
+      await _ambientPlayer.play();
     } catch (e) {
       debugPrint('AudioService: Error playing $sound - $e');
       _currentSound = MeditationSound.none;
@@ -85,25 +105,32 @@ class AudioService {
 
   Future<void> setVolume(double volume) async {
     _volume = volume.clamp(0.0, 1.0);
-    await _player.setVolume(_volume);
+    await _ambientPlayer.setVolume(_volume);
   }
 
   Future<void> pause() async {
-    await _player.pause();
+    await _ambientPlayer.pause();
   }
 
   Future<void> resume() async {
     if (_currentSound != MeditationSound.none) {
-      await _player.play();
+      await _ambientPlayer.play();
     }
   }
 
   Future<void> stop() async {
-    await _player.stop();
+    await _ambientPlayer.stop();
+    _currentSound = MeditationSound.none;
+  }
+
+  Future<void> stopAll() async {
+    await _ambientPlayer.stop();
+    await _bellPlayer.stop();
     _currentSound = MeditationSound.none;
   }
 
   void dispose() {
-    _player.dispose();
+    _ambientPlayer.dispose();
+    _bellPlayer.dispose();
   }
 }

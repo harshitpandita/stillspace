@@ -49,7 +49,7 @@ class _SessionScreenState extends State<SessionScreen> with TickerProviderStateM
   void dispose() {
     _stopTimer();
     _breathController.dispose();
-    _audioService.stop();
+    _audioService.stopAll();
     super.dispose();
   }
 
@@ -77,7 +77,14 @@ class _SessionScreenState extends State<SessionScreen> with TickerProviderStateM
     // Start timer immediately
     _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
 
-    // Play audio in background (don't await)
+    // Play bell after 1.5 second delay
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted && _isRunning) {
+        _audioService.playBell();
+      }
+    });
+
+    // Play ambient audio in background (don't await)
     if (widget.sound != MeditationSound.none) {
       _audioService.setVolume(_volume);
       _audioService.playSound(widget.sound);
@@ -104,6 +111,9 @@ class _SessionScreenState extends State<SessionScreen> with TickerProviderStateM
     await _audioService.stop();
 
     if (!mounted) return;
+
+    // Play completion bell
+    _audioService.playBell();
 
     setState(() {
       _isRunning = false;
@@ -132,7 +142,7 @@ class _SessionScreenState extends State<SessionScreen> with TickerProviderStateM
           icon: const Icon(Icons.close, color: AppColors.textPrimary),
           onPressed: () {
             _stopTimer();
-            _audioService.stop();
+            _audioService.stopAll();
             Navigator.of(context).pop();
           },
         ),
