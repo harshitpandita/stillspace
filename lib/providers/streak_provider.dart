@@ -111,8 +111,10 @@ class StreakProvider extends ChangeNotifier {
     final today = DateTime.now();
     final todayKey = _dateKey(today);
 
-    _totalMinutesMeditated += sessionMinutes;
-    _totalSessions++;
+    if (sessionMinutes > 0) {
+      _totalMinutesMeditated += sessionMinutes;
+      _totalSessions++;
+    }
 
     if (_completedDates.contains(todayKey)) {
       await _saveToHive();

@@ -116,14 +116,39 @@ class FirebaseService {
     final doc = await _firestore.collection('users').doc(uid).collection('streak_data').doc('current').get();
     if (!doc.exists) return;
 
-    final data = doc.data()!;
+    final cloudData = doc.data()!;
     final box = Hive.box(AppConstants.hiveBoxStreakData);
 
-    if (data['currentStreak'] != null) await box.put('currentStreak', data['currentStreak']);
-    if (data['longestStreak'] != null) await box.put('longestStreak', data['longestStreak']);
-    if (data['lastCompletedDate'] != null) await box.put('lastCompletedDate', data['lastCompletedDate']);
-    if (data['completedDates'] != null) {
-      await box.put('completedDates', List<String>.from(data['completedDates']));
+    // Merge: take higher streak values, union completed dates — never reset local progress
+    final localCurrent = (box.get('currentStreak', defaultValue: 0) as num).toInt();
+    final localLongest = (box.get('longestStreak', defaultValue: 0) as num).toInt();
+    final localDates = Set<String>.from(
+      box.get('completedDates', defaultValue: <String>[]) as List,
+    );
+    final localLastCompleted = box.get('lastCompletedDate') as String?;
+
+    final cloudCurrent = (cloudData['currentStreak'] as num?)?.toInt() ?? 0;
+    final cloudLongest = (cloudData['longestStreak'] as num?)?.toInt() ?? 0;
+    final cloudDates = cloudData['completedDates'] != null
+        ? Set<String>.from(cloudData['completedDates'] as List)
+        : <String>{};
+    final cloudLastCompleted = cloudData['lastCompletedDate'] as String?;
+
+    final mergedDates = {...localDates, ...cloudDates}.toList();
+    String? mergedLastCompleted;
+    if (localLastCompleted != null && cloudLastCompleted != null) {
+      mergedLastCompleted = localLastCompleted.compareTo(cloudLastCompleted) >= 0
+          ? localLastCompleted
+          : cloudLastCompleted;
+    } else {
+      mergedLastCompleted = localLastCompleted ?? cloudLastCompleted;
+    }
+
+    await box.put('currentStreak', localCurrent > cloudCurrent ? localCurrent : cloudCurrent);
+    await box.put('longestStreak', localLongest > cloudLongest ? localLongest : cloudLongest);
+    await box.put('completedDates', mergedDates);
+    if (mergedLastCompleted != null) {
+      await box.put('lastCompletedDate', mergedLastCompleted);
     }
   }
 

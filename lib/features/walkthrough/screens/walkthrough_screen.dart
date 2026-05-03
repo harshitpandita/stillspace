@@ -82,21 +82,16 @@ class _WalkthroughScreenState extends State<WalkthroughScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        leading: widget.showSkip
-            ? TextButton(
-                onPressed: _finish,
-                child: Text(
-                  'Skip',
-                  style: AppTextStyles.label.copyWith(color: AppColors.textSecondary),
-                ),
-              )
-            : IconButton(
+        automaticallyImplyLeading: false,
+        leading: !widget.showSkip
+            ? IconButton(
                 icon: const Icon(Icons.close, color: AppColors.textPrimary),
                 onPressed: () => Navigator.of(context).pop(),
-              ),
+              )
+            : null,
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 16),
+            padding: const EdgeInsets.only(right: 4),
             child: Center(
               child: Text(
                 '${_currentPage + 1}/${_pages.length}',
@@ -104,6 +99,14 @@ class _WalkthroughScreenState extends State<WalkthroughScreen> {
               ),
             ),
           ),
+          if (widget.showSkip)
+            TextButton(
+              onPressed: _finish,
+              child: Text(
+                'Skip',
+                style: AppTextStyles.label.copyWith(color: AppColors.textSecondary),
+              ),
+            ),
         ],
       ),
       body: SafeArea(

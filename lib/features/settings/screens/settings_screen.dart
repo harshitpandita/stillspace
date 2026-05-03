@@ -908,17 +908,19 @@ class _AccountTileState extends State<_AccountTile> {
       final user = await FirebaseService().signInWithGoogle();
 
       if (user != null && mounted) {
+        // Merge cloud into local (never resets local progress), then push merged result back
         await FirebaseService().syncAllDataFromCloud();
+        await FirebaseService().syncAllDataToCloud();
         _refreshProviders();
         setState(() => _lastSyncTime = DateTime.now());
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Sign in failed. Please try again.'),
             backgroundColor: AppColors.error,
-            duration: const Duration(seconds: 3),
+            duration: Duration(seconds: 3),
           ),
         );
       }

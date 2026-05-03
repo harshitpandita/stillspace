@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../providers/user_provider.dart';
 import '../../../services/notification_service.dart';
+import '../../../services/firebase_service.dart';
 import '../../../widgets/primary_action_button.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -22,6 +23,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int _selectedGoalDays = 21;
   TimeOfDay _selectedTime = const TimeOfDay(hour: 9, minute: 0);
   bool _isLoading = false;
+  bool _isSigningIn = false;
 
   @override
   void dispose() {
@@ -134,49 +136,58 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget _buildNameStep() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight - 48),
-            child: IntrinsicHeight(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 40),
-                  const Text("What's your name?", style: AppTextStyles.headline1),
-                  const SizedBox(height: 12),
-                  Text(
-                    "We'll use this to personalize your experience.",
-                    style: AppTextStyles.body2,
-                  ),
-                  const SizedBox(height: 40),
-                  TextField(
-                    controller: _nameController,
-                    style: AppTextStyles.body1,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: InputDecoration(
-                      hintText: 'Enter your name',
-                      hintStyle: AppTextStyles.body2,
-                      filled: true,
-                      fillColor: AppColors.surface,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-                      ),
+        return GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          behavior: HitTestBehavior.opaque,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight - 48),
+              child: IntrinsicHeight(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 40),
+                    const Text("What's your name?", style: AppTextStyles.headline1),
+                    const SizedBox(height: 12),
+                    Text(
+                      "We'll use this to personalize your experience.",
+                      style: AppTextStyles.body2,
                     ),
-                    onChanged: (_) => setState(() {}),
-                  ),
-                  const Spacer(),
-                  PrimaryActionButton(
-                    label: 'Continue',
-                    onPressed: _nameController.text.trim().isNotEmpty ? _nextStep : null,
-                  ),
-                  const SizedBox(height: 16),
-                ],
+                    const SizedBox(height: 40),
+                    TextField(
+                      controller: _nameController,
+                      style: AppTextStyles.body1,
+                      textCapitalization: TextCapitalization.words,
+                      textInputAction: TextInputAction.done,
+                      decoration: InputDecoration(
+                        hintText: 'Enter your name',
+                        hintStyle: AppTextStyles.body2,
+                        filled: true,
+                        fillColor: AppColors.surface,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                        ),
+                      ),
+                      onChanged: (_) => setState(() {}),
+                      onSubmitted: (_) => FocusScope.of(context).unfocus(),
+                    ),
+                    const Spacer(),
+                    PrimaryActionButton(
+                      label: 'Continue',
+                      onPressed: _nameController.text.trim().isNotEmpty ? () {
+                        FocusScope.of(context).unfocus();
+                        _nextStep();
+                      } : null,
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
               ),
             ),
           ),
@@ -342,6 +353,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+  Future<void> _signInWithGoogle() async {
+    setState(() => _isSigningIn = true);
+    try {
+      await FirebaseService().signInWithGoogle();
+    } catch (e) {
+      // Sign-in failed silently — user can still continue
+    }
+    if (mounted) setState(() => _isSigningIn = false);
+    await _completeOnboarding();
+  }
+
   Widget _buildWelcomeStep() {
     return Padding(
       padding: const EdgeInsets.all(24),
@@ -394,13 +416,72 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
           ),
           const Spacer(),
-          PrimaryActionButton(
-            label: "Let's Go",
-            onPressed: _completeOnboarding,
-            isLoading: _isLoading,
+
+          // Primary: Google Sign-In
+          _buildGoogleSignInButton(),
+          const SizedBox(height: 12),
+
+          // Secondary: Skip sign-in and continue
+          TextButton(
+            onPressed: (_isLoading || _isSigningIn) ? null : _completeOnboarding,
+            child: Text(
+              'Skip — continue without backup',
+              style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
         ],
+      ),
+    );
+  }
+
+  Widget _buildGoogleSignInButton() {
+    final isDisabled = _isLoading || _isSigningIn;
+    return GestureDetector(
+      onTap: isDisabled ? null : _signInWithGoogle,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: isDisabled ? Colors.white54 : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (_isSigningIn)
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black54),
+              )
+            else ...[
+              Container(
+                width: 20,
+                height: 20,
+                alignment: Alignment.center,
+                child: const Text(
+                  'G',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Continue with Google',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
