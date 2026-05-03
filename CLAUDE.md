@@ -24,7 +24,7 @@ Always verify absolute path before creating any file
 - **Cloud**: Cloud Firestore (backup + sync)
 - **Notifications**: flutter_local_notifications
 - **Charts**: fl_chart
-- **Audio**: just_audio (stretch goal — skip until core is complete)
+- **Audio**: just_audio (local assets: 2.5 Hz binaural, brown noise, bell)
 
 ## Design System
 - **Theme**: Dark ONLY — no light mode
@@ -65,6 +65,7 @@ mood_log.dart
 session/
 screens/
 session_screen.dart
+meditate_screen.dart
 models/
 session_model.dart
 journal/
@@ -89,6 +90,7 @@ services/
 firebase_service.dart
 notification_service.dart
 hive_service.dart
+audio_service.dart
 widgets/
 mood_selector_widget.dart
 primary_action_button.dart
@@ -239,21 +241,21 @@ Output: { sessionDuration, sessionType, promptMessage, notificationUrgency }
    - Insight label: "Your emotional trend this week"
 
 ## DOD Compliance Checklist
-- [ ] Custom theme (colors, typography) — not default Flutter
-- [ ] 3 custom reusable widgets
-- [ ] Responsive layout
-- [ ] 2+ micro-interactions (breathing animation, screen transitions)
-- [ ] Provider architecture — clean separation UI/logic/data
-- [ ] No setState misuse
-- [ ] Firebase Auth + Firestore integrated
-- [ ] Structured data models
-- [ ] Offline handling via Hive
-- [ ] Custom logic system (recommendation engine)
-- [ ] Data visualization with insight labels
-- [ ] 2 widget tests minimum
-- [ ] Edge cases: empty states, no internet, invalid input, first-time user
-- [ ] APK build
-- [ ] App icon + splash screen
+- [x] Custom theme (colors, typography) — not default Flutter
+- [x] 3 custom reusable widgets (MoodSelectorWidget, PrimaryActionButton, SessionCard)
+- [x] Responsive layout
+- [x] 2+ micro-interactions (breathing animation, screen transitions, bell sounds)
+- [x] Provider architecture — clean separation UI/logic/data
+- [x] No setState misuse
+- [x] Firebase Auth + Firestore integrated
+- [x] Structured data models
+- [x] Offline handling via Hive
+- [x] Custom logic system (recommendation engine)
+- [x] Data visualization with insight labels
+- [x] 2 widget tests minimum (17 tests)
+- [x] Edge cases: empty states, no internet, invalid input, first-time user
+- [x] APK build
+- [x] App icon + splash screen
 
 ## Coding Rules (ALWAYS follow)
 - All logic in providers — UI only calls provider methods and listens to state
@@ -288,7 +290,13 @@ Output: { sessionDuration, sessionType, promptMessage, notificationUrgency }
 - [x] Firebase Auth + Firestore sync (Google Sign-In, auto-sync on data change)
 - [x] Recommendation engine (context-aware session suggestions on Home)
 - [x] Testing (17 tests: PrimaryActionButton widget + RecommendationEngine unit)
-- [ ] Polish + APK
+- [x] Audio service (local assets: 2.5 Hz focus, brown noise, bell sound)
+- [x] MeditateScreen (session selection: duration + ambient sound)
+- [x] Home screen redesign (recommended session, custom session, daily wisdom, journey path)
+- [x] Bell sound at session start (1.5s delay) and end
+- [x] Foreground day refresh (quotes/calendar update on new day)
+- [x] Streak explanation modal (how streaks work)
+- [x] Polish + APK (app-release.apk built)
 
 ## Testing Onboarding
 To reset and test onboarding again, uncomment the Hive clear lines in main.dart (around line 48-52)

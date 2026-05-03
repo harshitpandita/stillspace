@@ -460,6 +460,7 @@ class _AccountTile extends StatefulWidget {
 class _AccountTileState extends State<_AccountTile> {
   bool _isLoading = false;
   bool _isSyncing = false;
+  DateTime? _lastSyncTime;
 
   @override
   Widget build(BuildContext context) {
@@ -467,123 +468,386 @@ class _AccountTileState extends State<_AccountTile> {
     final isSignedIn = firebaseService.isSignedIn;
     final user = firebaseService.currentUser;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          Row(
+    if (isSignedIn) {
+      return _buildSignedInView(user);
+    } else {
+      return _buildSignedOutView();
+    }
+  }
+
+  Widget _buildSignedOutView() {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
             children: [
               Container(
-                width: 48,
-                height: 48,
+                width: 64,
+                height: 64,
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: isSignedIn && user?.photoURL != null
-                    ? ClipOval(
-                        child: Image.network(
-                          user!.photoURL!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const Icon(
-                            Icons.person,
-                            color: AppColors.primary,
-                            size: 24,
-                          ),
-                        ),
-                      )
-                    : const Icon(Icons.person, color: AppColors.primary, size: 24),
+                child: const Icon(Icons.cloud_outlined, color: AppColors.primary, size: 32),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      isSignedIn ? (user?.displayName ?? 'Signed In') : 'Not signed in',
-                      style: AppTextStyles.body1,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      isSignedIn
-                          ? (user?.email ?? 'Backup enabled')
-                          : 'Sign in to backup your data',
-                      style: AppTextStyles.caption,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
+              const SizedBox(height: 16),
+              const Text('Cloud Backup', style: AppTextStyles.headline3),
+              const SizedBox(height: 8),
+              Text(
+                'Sign in to securely backup your meditation progress, journal entries, and streaks.',
+                style: AppTextStyles.body2,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              _buildGoogleSignInButton(),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildBenefitChip(Icons.backup, 'Auto backup'),
+                  const SizedBox(width: 12),
+                  _buildBenefitChip(Icons.devices, 'Sync devices'),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          if (isSignedIn) ...[
-            Row(
-              children: [
-                Expanded(
-                  child: _buildActionButton(
-                    icon: Icons.sync,
-                    label: _isSyncing ? 'Syncing...' : 'Sync Now',
-                    onTap: _isSyncing ? null : _syncData,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildActionButton(
-                    icon: Icons.logout,
-                    label: 'Sign Out',
-                    onTap: _signOut,
-                    isDestructive: true,
-                  ),
-                ),
-              ],
-            ),
-          ] else
-            _buildActionButton(
-              icon: Icons.login,
-              label: _isLoading ? 'Signing in...' : 'Sign in with Google',
-              onTap: _isLoading ? null : _signIn,
-              fullWidth: true,
-            ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBenefitChip(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: AppColors.textSecondary, size: 14),
+          const SizedBox(width: 6),
+          Text(label, style: AppTextStyles.caption),
         ],
       ),
     );
   }
 
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback? onTap,
-    bool isDestructive = false,
-    bool fullWidth = false,
-  }) {
-    final color = isDestructive ? AppColors.error : AppColors.primary;
-
+  Widget _buildGoogleSignInButton() {
     return GestureDetector(
-      onTap: onTap,
+      onTap: _isLoading ? null : _signIn,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: fullWidth ? MainAxisSize.max : MainAxisSize.min,
           children: [
-            Icon(icon, color: color, size: 18),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: AppTextStyles.label.copyWith(color: color),
-            ),
+            if (_isLoading)
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black54),
+              )
+            else ...[
+              Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(2),
+                ),
+                child: const Center(
+                  child: Text(
+                    'G',
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Continue with Google',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSignedInView(dynamic user) {
+    final streakProvider = context.watch<StreakProvider>();
+    final journalProvider = context.watch<JournalProvider>();
+
+    return Column(
+      children: [
+        // Profile card
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.primary, width: 2),
+                    ),
+                    child: user?.photoURL != null
+                        ? ClipOval(
+                            child: Image.network(
+                              user!.photoURL!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stack) => const Icon(
+                                Icons.person,
+                                color: AppColors.primary,
+                                size: 28,
+                              ),
+                            ),
+                          )
+                        : const Icon(Icons.person, color: AppColors.primary, size: 28),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user?.displayName ?? 'Stillspace User',
+                          style: AppTextStyles.body1.copyWith(fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          user?.email ?? '',
+                          style: AppTextStyles.caption,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: AppColors.secondary,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Backup active',
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.secondary,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        // Sync status card
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.cloud_done_outlined,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Cloud Sync', style: AppTextStyles.label),
+                        Text(
+                          _lastSyncTime != null
+                              ? 'Last synced ${_formatSyncTime(_lastSyncTime!)}'
+                              : 'Synced automatically',
+                          style: AppTextStyles.caption,
+                        ),
+                      ],
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: _isSyncing ? null : _syncData,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: _isSyncing
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.primary,
+                              ),
+                            )
+                          : const Icon(Icons.sync, color: AppColors.primary, size: 18),
+                    ),
+                  ),
+                ],
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Divider(color: AppColors.background, height: 1),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildSyncStat(
+                    '${streakProvider.totalSessions}',
+                    'Sessions',
+                  ),
+                  _buildSyncStat(
+                    '${journalProvider.recentEntries.length}',
+                    'Entries',
+                  ),
+                  _buildSyncStat(
+                    '${streakProvider.currentStreak}',
+                    'Streak',
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        // Sign out button
+        GestureDetector(
+          onTap: () => _showSignOutDialog(context),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.logout, color: AppColors.error.withValues(alpha: 0.8), size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Sign Out',
+                    style: AppTextStyles.body1.copyWith(
+                      color: AppColors.error.withValues(alpha: 0.8),
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: AppColors.error.withValues(alpha: 0.5),
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSyncStat(String value, String label) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: AppTextStyles.body1.copyWith(
+            color: AppColors.primary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(label, style: AppTextStyles.caption),
+      ],
+    );
+  }
+
+  String _formatSyncTime(DateTime time) {
+    final now = DateTime.now();
+    final diff = now.difference(time);
+
+    if (diff.inMinutes < 1) return 'just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${diff.inDays}d ago';
+  }
+
+  void _showSignOutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Sign Out?', style: AppTextStyles.headline3),
+        content: Text(
+          'Your data is safely backed up. You can sign in again anytime to restore it.',
+          style: AppTextStyles.body2,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'Cancel',
+              style: AppTextStyles.label.copyWith(color: AppColors.textSecondary),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _signOut();
+            },
+            child: Text(
+              'Sign Out',
+              style: AppTextStyles.label.copyWith(color: AppColors.error),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -591,11 +855,24 @@ class _AccountTileState extends State<_AccountTile> {
   Future<void> _signIn() async {
     setState(() => _isLoading = true);
 
-    final user = await FirebaseService().signInWithGoogle();
+    try {
+      final user = await FirebaseService().signInWithGoogle();
 
-    if (user != null && mounted) {
-      await FirebaseService().syncAllDataFromCloud();
-      _refreshProviders();
+      if (user != null && mounted) {
+        await FirebaseService().syncAllDataFromCloud();
+        _refreshProviders();
+        setState(() => _lastSyncTime = DateTime.now());
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Sign in failed. Please try again.'),
+            backgroundColor: AppColors.error,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
 
     if (mounted) {
@@ -606,24 +883,40 @@ class _AccountTileState extends State<_AccountTile> {
   Future<void> _signOut() async {
     await FirebaseService().signOut();
     if (mounted) {
-      setState(() {});
+      setState(() => _lastSyncTime = null);
     }
   }
 
   Future<void> _syncData() async {
     setState(() => _isSyncing = true);
 
-    await FirebaseService().syncAllDataToCloud();
+    try {
+      await FirebaseService().syncAllDataToCloud();
 
-    if (mounted) {
-      setState(() => _isSyncing = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Data synced successfully'),
-          backgroundColor: AppColors.surface,
-          duration: Duration(seconds: 2),
-        ),
-      );
+      if (mounted) {
+        setState(() {
+          _isSyncing = false;
+          _lastSyncTime = DateTime.now();
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Synced successfully'),
+            backgroundColor: AppColors.surface,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSyncing = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Sync failed. Check your connection.'),
+            backgroundColor: AppColors.error,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 
