@@ -9,6 +9,8 @@ import '../../../providers/streak_provider.dart';
 import '../../../providers/mood_provider.dart';
 import '../../../services/audio_service.dart';
 import '../../mood/screens/mood_checkin_screen.dart';
+import '../../session/data/breathing_sessions.dart';
+import '../../session/screens/breathing_session_screen.dart';
 import '../../session/screens/meditate_screen.dart';
 import '../../session/screens/session_screen.dart';
 import '../../settings/screens/settings_screen.dart';
@@ -256,8 +258,7 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildPrimaryRecommendation(BuildContext context, Recommendation rec) {
     return GestureDetector(
-      onTap: () => _startSession(context, rec.sessionDuration, MeditationSound.none,
-          RecommendationEngine.getSessionTypeLabel(rec.sessionType)),
+      onTap: () => _startRecommended(context, rec),
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
@@ -567,7 +568,26 @@ class HomeScreen extends StatelessWidget {
         return Icons.nightlight_outlined;
       case SessionType.standard:
         return Icons.self_improvement;
+      case SessionType.wimHof:
+        return Icons.air;
     }
+  }
+
+  void _startRecommended(BuildContext context, Recommendation rec) {
+    if (rec.sessionType == SessionType.wimHof) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const BreathingSessionScreen(session: BreathingSessions.wimHof),
+        ),
+      );
+      return;
+    }
+    _startSession(
+      context,
+      rec.sessionDuration,
+      MeditationSound.none,
+      RecommendationEngine.getSessionTypeLabel(rec.sessionType),
+    );
   }
 
   void _showStreakExplanation(BuildContext context, StreakProvider streakProvider) {

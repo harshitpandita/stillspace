@@ -1,7 +1,7 @@
 // Recommendation engine - suggests sessions and prompts based on user state
 import '../../core/constants/app_constants.dart';
 
-enum SessionType { calming, energizing, focus, windDown, standard }
+enum SessionType { calming, energizing, focus, windDown, standard, wimHof }
 
 enum Urgency { low, medium, high }
 
@@ -54,7 +54,19 @@ class RecommendationEngine {
       );
     }
 
-    // Priority 3: Low mood - gentle approach
+    // Priority 3a: Low mood + morning - Wim Hof breathing to shake off stress and energize
+    if (moodScore != null && moodScore <= 2 && isMorning) {
+      return Recommendation(
+        sessionDuration: 10,
+        sessionType: SessionType.wimHof,
+        promptMessage: 'Feeling heavy this morning? Wim Hof breathing can shift your state in 10 minutes.',
+        journalPrompt: AppConstants.lowMoodJournalPrompts[
+            DateTime.now().millisecond % AppConstants.lowMoodJournalPrompts.length],
+        urgency: Urgency.medium,
+      );
+    }
+
+    // Priority 3b: Low mood - gentle approach
     if (moodScore != null && moodScore <= 2) {
       return Recommendation(
         sessionDuration: 5,
@@ -141,6 +153,8 @@ class RecommendationEngine {
         return 'Wind Down';
       case SessionType.standard:
         return 'Mindfulness';
+      case SessionType.wimHof:
+        return 'Wim Hof Breathing';
     }
   }
 }

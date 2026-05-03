@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../services/audio_service.dart';
+import '../data/breathing_sessions.dart';
+import '../models/breathing_session.dart';
+import 'breathing_session_screen.dart';
 import 'session_screen.dart';
 
 class MeditateScreen extends StatefulWidget {
@@ -43,7 +46,7 @@ class _MeditateScreenState extends State<MeditateScreen> {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,9 +66,25 @@ class _MeditateScreenState extends State<MeditateScreen> {
               const SizedBox(height: 16),
               _buildSoundSelector(),
 
-              const Spacer(),
+              const SizedBox(height: 32),
 
               _buildStartButton(),
+
+              const SizedBox(height: 32),
+
+              const Text('Guided Breathing', style: AppTextStyles.headline3),
+              const SizedBox(height: 4),
+              Text(
+                'Audio-guided breathwork sessions',
+                style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 16),
+              ...BreathingSessions.all.map(
+                (session) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _buildBreathingCard(session),
+                ),
+              ),
 
               const SizedBox(height: 16),
             ],
@@ -248,6 +267,70 @@ class _MeditateScreenState extends State<MeditateScreen> {
           duration: _selectedDuration,
           sound: _selectedSound,
           meditationType: _sessionLabel,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBreathingCard(BreathingSession session) {
+    final mins = session.durationSeconds ~/ 60;
+    final secs = session.durationSeconds % 60;
+    final durationLabel = secs == 0 ? '$mins min' : '$mins min $secs sec';
+
+    return GestureDetector(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => BreathingSessionScreen(session: session),
+        ),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(session.icon, color: AppColors.primary, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(session.title, style: AppTextStyles.label),
+                  const SizedBox(height: 2),
+                  Text(
+                    session.description,
+                    style: AppTextStyles.caption.copyWith(fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                durationLabel,
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 11,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

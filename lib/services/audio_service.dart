@@ -1,4 +1,5 @@
 // Audio service - manages ambient sounds and bell for meditation sessions
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -15,6 +16,7 @@ class AudioService {
 
   final AudioPlayer _ambientPlayer = AudioPlayer();
   final AudioPlayer _bellPlayer = AudioPlayer();
+  final AudioPlayer _guidedPlayer = AudioPlayer();
   MeditationSound _currentSound = MeditationSound.none;
   double _volume = 0.5;
 
@@ -126,11 +128,42 @@ class AudioService {
   Future<void> stopAll() async {
     await _ambientPlayer.stop();
     await _bellPlayer.stop();
+    await _guidedPlayer.stop();
     _currentSound = MeditationSound.none;
   }
+
+  // Plays a one-shot guided audio file (e.g. Wim Hof). Note: just_audio's play()
+  // future only resolves when playback ENDS, so we deliberately do not await it.
+  Future<void> playGuided(String assetPath) async {
+    try {
+      await _guidedPlayer.setAsset(assetPath);
+      await _guidedPlayer.setLoopMode(LoopMode.off);
+      await _guidedPlayer.setVolume(1.0);
+      await _guidedPlayer.seek(Duration.zero);
+      unawaited(_guidedPlayer.play());
+    } catch (e) {
+      debugPrint('AudioService: Error playing guided $assetPath - $e');
+    }
+  }
+
+  Future<void> pauseGuided() async {
+    await _guidedPlayer.pause();
+  }
+
+  Future<void> resumeGuided() async {
+    await _guidedPlayer.play();
+  }
+
+  Future<void> stopGuided() async {
+    await _guidedPlayer.stop();
+  }
+
+  Stream<Duration> get guidedPositionStream => _guidedPlayer.positionStream;
+  Stream<PlayerState> get guidedStateStream => _guidedPlayer.playerStateStream;
 
   void dispose() {
     _ambientPlayer.dispose();
     _bellPlayer.dispose();
+    _guidedPlayer.dispose();
   }
 }

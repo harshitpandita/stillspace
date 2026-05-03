@@ -2,9 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../providers/mood_provider.dart';
 import '../../../providers/streak_provider.dart';
 import '../../../providers/user_provider.dart';
 import '../../../services/notification_service.dart';
+import '../../mood/screens/mood_checkin_screen.dart';
 import 'home_screen.dart';
 import '../../journal/screens/journal_screen.dart';
 import '../../profile/screens/profile_screen.dart';
@@ -31,7 +33,34 @@ class _MainScreenState extends State<MainScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<StreakProvider>().checkAndUpdateStreak();
       _scheduleNotifications();
+      _maybePromptMoodCheckIn();
     });
+  }
+
+  Future<void> _maybePromptMoodCheckIn() async {
+    if (!mounted) return;
+    final moodProvider = context.read<MoodProvider>();
+    if (!moodProvider.shouldShowMoodCheckIn) return;
+
+    await Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: true,
+        pageBuilder: (_, _, _) => const MoodCheckinScreen(),
+        transitionsBuilder: (_, animation, _, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.05),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+              child: child,
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 300),
+      ),
+    );
   }
 
   Future<void> _scheduleNotifications() async {
