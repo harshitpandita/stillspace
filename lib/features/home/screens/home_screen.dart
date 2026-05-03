@@ -18,42 +18,42 @@ class HomeScreen extends StatelessWidget {
 
   static const List<String> _dailyWisdom = [
     // Practical daily life wisdom
-    "You're not lazy. You're exhausted from pretending everything is fine. Rest isn't earned — it's required.",
-    "That thing you're avoiding? It's taking more energy to avoid than it would to just do it.",
-    "You don't have to fix everything today. You just have to not make it worse.",
-    "Stop waiting until you feel ready. You'll figure it out as you go. Everyone does.",
-    "The people who trigger you the most are showing you where you haven't healed yet.",
-    "You're not behind in life. You're exactly where your choices have led you. And you can make new ones.",
-    "Boundaries aren't mean. They're how you teach people what you will and won't accept.",
-    "Your anxiety is lying to you. The worst case scenario almost never happens.",
-    "You can love someone and still walk away. Those two things aren't mutually exclusive.",
-    "Overexplaining is a trauma response. You don't owe anyone a 10-minute justification for your no.",
+"​If it takes less than five minutes, do it now—future you will thank you.",
+"​Avoiding a task doesn’t remove it; it just adds anxiety on top of it.",
+"​You don’t need motivation—you need a start. Momentum creates motivation.",
+"​Clarity comes from action, not overthinking.",
+"​If you keep saying yes to everything, don’t be surprised when nothing improves.",
+"​What you tolerate becomes your standard.",
+"​Rest before you burn out, not after.",
+"​If you wouldn’t take their advice, don’t take their criticism.",
+"​You can’t control outcomes, but you can control preparation.",
+"​Small daily decisions compound into a life you either want or regret.",
 
-    // Osho-inspired practical wisdom
-    "If you can laugh at yourself, nobody can make a fool of you.",
-    "Don't choose. Accept life as it is in its totality. The moment you choose, you fall apart.",
-    "Experience life in all possible ways — good-bad, bitter-sweet, dark-light. Don't be afraid of experience.",
-    "Creativity is the greatest rebellion in existence. A creative person is not obedient.",
-    "The real question is not whether life exists after death. The real question is whether you are alive before death.",
+// Osho / ancient / spiritual-style but practical
+"​Watch your thoughts like clouds—don’t build a home under every storm.",
+"​What you resist persists; what you accept, you can change.",
+"​Act fully in the moment, and regret disappears on its own.",
+"​Attachment is the root of suffering; learn to hold things lightly.",
+"​You don’t find peace by fixing the world, but by understanding your mind.",
 
-    // More therapist-style practical advice
-    "Your feelings are valid, but they're not always facts. Learn the difference.",
-    "You can't pour from an empty cup. Take care of yourself first — that's not selfish, it's necessary.",
-    "The version of you in someone else's head is not your responsibility.",
-    "Closure is something you give yourself. Stop waiting for an apology that might never come.",
-    "You're not difficult. You just know what you want now, and that makes some people uncomfortable.",
-    "Being alone and being lonely are two different things. Learn to enjoy your own company.",
-    "Not everything that weighs on you deserves your attention. Some things you just have to let go.",
-    "You teach people how to treat you by what you allow, what you stop, and what you reinforce.",
-    "It's okay to outgrow people. It doesn't mean the time you spent together was wasted.",
-    "Your body keeps the score. If you keep ignoring it, it will eventually make you listen.",
+// Grounded psychological / therapist-style
+"​Feelings deserve attention, not automatic obedience.",
+"​You don’t need everyone to understand you to be valid.",
+"​Silence is often a clearer answer than overexplaining.",
+"​If you keep abandoning yourself, no relationship will feel safe.",
+"​Closure rarely comes from others—it comes from deciding you’re done.",
+"​Loneliness decreases when you build a life you actually enjoy living.",
+"​Not every thought needs to be believed, and not every emotion needs to be acted on.",
+"​You can miss someone and still know they’re not good for you.",
+"​Healing isn’t becoming someone new—it’s returning to what was always there.",
+"​Your patterns will repeat until you interrupt them consciously.",
 
-    // Daily applicable wisdom
-    "Done is better than perfect. Stop polishing and ship it.",
-    "Most of your stress comes from the way you respond, not the way life is.",
-    "You're allowed to change your mind. That's called growth, not inconsistency.",
-    "The conversation you're avoiding is usually the one you need to have the most.",
-    "Stop rehearsing conversations that might never happen. You're wasting today on imaginary tomorrow.",
+// Daily applicable execution mindset
+"​Start before you’re ready; ready is a moving target.",
+"​If it’s important, schedule it. If it’s not scheduled, it’s optional.",
+"​Discipline is choosing what you want most over what you want now.",
+"​The hard conversation saves more time than avoiding it ever will.",
+"​Stop solving problems that don’t exist yet—deal with what’s real.",
   ];
 
   String _getGreeting() {
