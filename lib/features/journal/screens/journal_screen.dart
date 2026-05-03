@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../providers/journal_provider.dart';
+import '../../../providers/streak_provider.dart';
 import '../models/journal_entry.dart';
 import 'journal_entry_screen.dart';
 
@@ -13,6 +14,7 @@ class JournalListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final journalProvider = context.watch<JournalProvider>();
+    final streakProvider = context.watch<StreakProvider>();
     final entries = journalProvider.recentEntries;
 
     return Scaffold(
@@ -21,6 +23,12 @@ class JournalListScreen extends StatelessWidget {
         backgroundColor: AppColors.background,
         title: const Text('Journal', style: AppTextStyles.headline2),
         centerTitle: false,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: _buildStreakBadge(context, streakProvider),
+          ),
+        ],
       ),
       body: entries.isEmpty ? _buildEmptyState(context) : _buildEntryList(context, entries),
       floatingActionButton: FloatingActionButton(
@@ -28,6 +36,155 @@ class JournalListScreen extends StatelessWidget {
         backgroundColor: AppColors.primary,
         child: const Icon(Icons.add, color: AppColors.background),
       ),
+    );
+  }
+
+  Widget _buildStreakBadge(BuildContext context, StreakProvider streakProvider) {
+    return GestureDetector(
+      onTap: () => _showStreakExplanation(context, streakProvider),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  '${streakProvider.currentStreak}',
+                  style: AppTextStyles.label.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Day Streak',
+                  style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w600),
+                ),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.ac_unit,
+                      size: 10,
+                      color: streakProvider.freezesRemaining > 0
+                          ? AppColors.streakFreeze
+                          : AppColors.textSecondary,
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      '${streakProvider.freezesRemaining} freeze',
+                      style: AppTextStyles.caption.copyWith(fontSize: 10),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showStreakExplanation(BuildContext context, StreakProvider streakProvider) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.local_fire_department, color: AppColors.primary, size: 32),
+              ),
+              const SizedBox(height: 20),
+              const Text('Your Streak', style: AppTextStyles.headline2),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    _buildInfoRow(
+                      Icons.self_improvement,
+                      AppColors.primary,
+                      'Complete a session',
+                      'Meditation counts toward your streak',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildInfoRow(
+                      Icons.edit_note,
+                      AppColors.primary,
+                      'Write a journal entry',
+                      'Journaling also counts',
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: Divider(color: AppColors.surface, height: 1),
+                    ),
+                    _buildInfoRow(
+                      Icons.ac_unit,
+                      AppColors.streakFreeze,
+                      'Streak Freeze',
+                      streakProvider.freezesRemaining > 0
+                          ? '1 available — auto-protects if you miss a day'
+                          : 'Used this week — resets soon',
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, Color color, String title, String subtitle) {
+    return Row(
+      children: [
+        Icon(icon, color: color, size: 20),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: AppTextStyles.label),
+              Text(subtitle, style: AppTextStyles.caption),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

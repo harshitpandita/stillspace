@@ -121,4 +121,24 @@ class MoodProvider extends ChangeNotifier {
   String _dateKey(DateTime date) {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
+
+  double? getAverageMoodOnDates(Set<String> dates) {
+    if (dates.isEmpty) return null;
+
+    final matchingLogs = _moodLogs.where((log) {
+      final timestamp = log['timestamp'] as DateTime;
+      return dates.contains(_dateKey(timestamp));
+    }).toList();
+
+    if (matchingLogs.isEmpty) return null;
+
+    final sum = matchingLogs.fold<int>(0, (sum, log) => sum + (log['score'] as int));
+    return sum / matchingLogs.length;
+  }
+
+  double? get overallAverageMood {
+    if (_moodLogs.isEmpty) return null;
+    final sum = _moodLogs.fold<int>(0, (sum, log) => sum + (log['score'] as int));
+    return sum / _moodLogs.length;
+  }
 }

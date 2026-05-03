@@ -12,6 +12,8 @@ class StreakProvider extends ChangeNotifier {
   DateTime? _lastFreezeDate;
   int _goalDays = 21;
   DateTime? _goalStartDate;
+  int _totalMinutesMeditated = 0;
+  int _totalSessions = 0;
   final Set<String> _completedDates = {};
   final Set<String> _freezeDates = {};
 
@@ -24,6 +26,18 @@ class StreakProvider extends ChangeNotifier {
   DateTime? get goalStartDate => _goalStartDate;
   Set<String> get completedDates => Set.unmodifiable(_completedDates);
   Set<String> get freezeDates => Set.unmodifiable(_freezeDates);
+  int get totalMinutesMeditated => _totalMinutesMeditated;
+  int get totalSessions => _totalSessions;
+
+  String get formattedTotalTime {
+    if (_totalMinutesMeditated < 60) {
+      return '$_totalMinutesMeditated min';
+    }
+    final hours = _totalMinutesMeditated ~/ 60;
+    final mins = _totalMinutesMeditated % 60;
+    if (mins == 0) return '${hours}h';
+    return '${hours}h ${mins}m';
+  }
 
   int get daysLeftToGoal {
     if (_goalStartDate == null) return _goalDays;
@@ -47,6 +61,8 @@ class StreakProvider extends ChangeNotifier {
     _longestStreak = box.get('longestStreak', defaultValue: 0);
     _freezesUsedThisWeek = box.get('freezesUsedThisWeek', defaultValue: 0);
     _goalDays = box.get('goalDays', defaultValue: 21);
+    _totalMinutesMeditated = box.get('totalMinutesMeditated', defaultValue: 0);
+    _totalSessions = box.get('totalSessions', defaultValue: 0);
 
     final lastCompletedStr = box.get('lastCompletedDate') as String?;
     if (lastCompletedStr != null) {
@@ -71,6 +87,8 @@ class StreakProvider extends ChangeNotifier {
     await box.put('longestStreak', _longestStreak);
     await box.put('freezesUsedThisWeek', _freezesUsedThisWeek);
     await box.put('goalDays', _goalDays);
+    await box.put('totalMinutesMeditated', _totalMinutesMeditated);
+    await box.put('totalSessions', _totalSessions);
     await box.put('lastCompletedDate', _lastCompletedDate?.toIso8601String());
     await box.put('goalStartDate', _goalStartDate?.toIso8601String());
     await box.put('completedDates', _completedDates.toList());
@@ -89,11 +107,16 @@ class StreakProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> incrementStreak() async {
+  Future<void> incrementStreak({int sessionMinutes = 0}) async {
     final today = DateTime.now();
     final todayKey = _dateKey(today);
 
+    _totalMinutesMeditated += sessionMinutes;
+    _totalSessions++;
+
     if (_completedDates.contains(todayKey)) {
+      await _saveToHive();
+      notifyListeners();
       return;
     }
 

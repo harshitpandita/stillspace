@@ -1,4 +1,4 @@
-// Session screen - meditation timer with breathing animation
+// Session screen - meditation timer with breathing animation and ambient audio
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -6,24 +6,34 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../providers/streak_provider.dart';
 import '../../../services/notification_service.dart';
+import '../../../services/audio_service.dart';
 import '../../../widgets/primary_action_button.dart';
 
 class SessionScreen extends StatefulWidget {
   final int duration;
+  final MeditationSound sound;
+  final String meditationType;
 
-  const SessionScreen({super.key, required this.duration});
+  const SessionScreen({
+    super.key,
+    required this.duration,
+    this.sound = MeditationSound.none,
+    this.meditationType = 'Meditation',
+  });
 
   @override
   State<SessionScreen> createState() => _SessionScreenState();
 }
 
-class _SessionScreenState extends State<SessionScreen> with SingleTickerProviderStateMixin {
+class _SessionScreenState extends State<SessionScreen> with TickerProviderStateMixin {
   late int _remainingSeconds;
   Timer? _timer;
   bool _isRunning = false;
   bool _isComplete = false;
   late AnimationController _breathController;
-  late Animation<double> _breathAnimation;
+
+  double _volume = 0.5;
+  final AudioService _audioService = AudioService();
 
   @override
   void initState() {
@@ -33,44 +43,74 @@ class _SessionScreenState extends State<SessionScreen> with SingleTickerProvider
       vsync: this,
       duration: const Duration(seconds: 4),
     );
-    _breathAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: _breathController, curve: Curves.easeInOut),
-    );
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _stopTimer();
     _breathController.dispose();
+    _audioService.stop();
     super.dispose();
   }
 
+  void _stopTimer() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  void _tick() {
+    if (!mounted || !_isRunning) return;
+
+    if (_remainingSeconds > 0) {
+      setState(() => _remainingSeconds--);
+    } else {
+      _completeSession();
+    }
+  }
+
   void _startSession() {
+    _stopTimer();
+
     setState(() => _isRunning = true);
     _breathController.repeat(reverse: true);
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_remainingSeconds > 0) {
-        setState(() => _remainingSeconds--);
-      } else {
-        _completeSession();
-      }
-    });
+
+    // Start timer immediately
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+
+    // Play audio in background (don't await)
+    if (widget.sound != MeditationSound.none) {
+      _audioService.setVolume(_volume);
+      _audioService.playSound(widget.sound);
+    }
   }
 
   void _pauseSession() {
-    _timer?.cancel();
+    _stopTimer();
     _breathController.stop();
+    _audioService.pause();
     setState(() => _isRunning = false);
   }
 
+  void _resumeSession() {
+    setState(() => _isRunning = true);
+    _breathController.repeat(reverse: true);
+    _audioService.resume();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+  }
+
   Future<void> _completeSession() async {
-    _timer?.cancel();
+    _stopTimer();
     _breathController.stop();
+    await _audioService.stop();
+
+    if (!mounted) return;
+
     setState(() {
       _isRunning = false;
       _isComplete = true;
     });
-    await context.read<StreakProvider>().incrementStreak();
+
+    await context.read<StreakProvider>().incrementStreak(sessionMinutes: widget.duration);
     await NotificationService().cancelFollowUpNotifications();
   }
 
@@ -80,6 +120,8 @@ class _SessionScreenState extends State<SessionScreen> with SingleTickerProvider
     return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
   }
 
+  bool get _hasStarted => _remainingSeconds != widget.duration * 60;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -88,8 +130,17 @@ class _SessionScreenState extends State<SessionScreen> with SingleTickerProvider
         backgroundColor: AppColors.background,
         leading: IconButton(
           icon: const Icon(Icons.close, color: AppColors.textPrimary),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () {
+            _stopTimer();
+            _audioService.stop();
+            Navigator.of(context).pop();
+          },
         ),
+        title: Text(
+          widget.meditationType,
+          style: AppTextStyles.label.copyWith(color: AppColors.textSecondary),
+        ),
+        centerTitle: true,
       ),
       body: SafeArea(
         child: Padding(
@@ -102,6 +153,14 @@ class _SessionScreenState extends State<SessionScreen> with SingleTickerProvider
               else
                 _buildTimerView(),
               const Spacer(),
+
+              // Volume slider - only when sound is selected and session started
+              if (!_isComplete && widget.sound != MeditationSound.none && _hasStarted) ...[
+                _buildVolumeSlider(),
+                const SizedBox(height: 16),
+              ],
+
+              // Action button
               if (_isComplete)
                 PrimaryActionButton(
                   label: 'Done',
@@ -114,13 +173,47 @@ class _SessionScreenState extends State<SessionScreen> with SingleTickerProvider
                 )
               else
                 PrimaryActionButton(
-                  label: _remainingSeconds == widget.duration * 60 ? 'Start' : 'Resume',
-                  onPressed: _startSession,
+                  label: _hasStarted ? 'Resume' : 'Start',
+                  onPressed: _hasStarted ? _resumeSession : _startSession,
                 ),
               const SizedBox(height: 16),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildVolumeSlider() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.volume_down, color: AppColors.textSecondary, size: 20),
+          Expanded(
+            child: SliderTheme(
+              data: SliderThemeData(
+                activeTrackColor: AppColors.primary,
+                inactiveTrackColor: AppColors.background,
+                thumbColor: AppColors.primary,
+                overlayColor: AppColors.primary.withValues(alpha: 0.2),
+                trackHeight: 4,
+              ),
+              child: Slider(
+                value: _volume,
+                onChanged: (value) {
+                  setState(() => _volume = value);
+                  _audioService.setVolume(value);
+                },
+              ),
+            ),
+          ),
+          const Icon(Icons.volume_up, color: AppColors.textSecondary, size: 20),
+        ],
       ),
     );
   }
@@ -134,10 +227,13 @@ class _SessionScreenState extends State<SessionScreen> with SingleTickerProvider
         ),
         const SizedBox(height: 40),
         AnimatedBuilder(
-          animation: _breathAnimation,
+          animation: _breathController,
           builder: (context, child) {
+            final scale = _isRunning
+                ? 0.8 + (0.2 * _breathController.value)
+                : 0.9;
             return Transform.scale(
-              scale: _isRunning ? _breathAnimation.value : 0.9,
+              scale: scale,
               child: Container(
                 width: 200,
                 height: 200,
@@ -160,10 +256,26 @@ class _SessionScreenState extends State<SessionScreen> with SingleTickerProvider
           },
         ),
         const SizedBox(height: 40),
-        Text(
-          _isRunning ? 'Breathe...' : 'Ready when you are',
-          style: AppTextStyles.body1.copyWith(color: AppColors.textSecondary),
-        ),
+        if (_isRunning && widget.sound != MeditationSound.none)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                AudioService.getSoundEmoji(widget.sound),
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                AudioService.getSoundName(widget.sound),
+                style: AppTextStyles.caption.copyWith(color: AppColors.primary),
+              ),
+            ],
+          )
+        else
+          Text(
+            _isRunning ? 'Breathe...' : 'Ready when you are',
+            style: AppTextStyles.body1.copyWith(color: AppColors.textSecondary),
+          ),
       ],
     );
   }
@@ -184,7 +296,7 @@ class _SessionScreenState extends State<SessionScreen> with SingleTickerProvider
         const Text('Session Complete!', style: AppTextStyles.headline1),
         const SizedBox(height: 12),
         Text(
-          'You completed ${widget.duration} minutes of mindfulness.',
+          'You completed ${widget.duration} minutes of ${widget.meditationType.toLowerCase()}.',
           style: AppTextStyles.body1.copyWith(color: AppColors.textSecondary),
           textAlign: TextAlign.center,
         ),

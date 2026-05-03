@@ -47,10 +47,10 @@ Future<void> main() async {
   await Hive.openBox(AppConstants.hiveBoxStreakData);
 
   // UNCOMMENT TO CLEAR ALL HIVE DATA FOR TESTING ONBOARDING:
-  // await Hive.box(AppConstants.hiveBoxUserProfile).clear();
-  // await Hive.box(AppConstants.hiveBoxMoodLogs).clear();
-  // await Hive.box(AppConstants.hiveBoxJournalEntries).clear();
-  // await Hive.box(AppConstants.hiveBoxStreakData).clear();
+  //await Hive.box(AppConstants.hiveBoxUserProfile).clear();
+  //await Hive.box(AppConstants.hiveBoxMoodLogs).clear();
+  //await Hive.box(AppConstants.hiveBoxJournalEntries).clear();
+  //await Hive.box(AppConstants.hiveBoxStreakData).clear();
 
   // Sign out from Firebase if local data was cleared (fresh install or data wipe)
   final isOnboardingComplete = Hive.box(AppConstants.hiveBoxUserProfile)
@@ -87,8 +87,51 @@ class StillspaceApp extends StatelessWidget {
   }
 }
 
-class AppRouter extends StatelessWidget {
+class AppRouter extends StatefulWidget {
   const AppRouter({super.key});
+
+  @override
+  State<AppRouter> createState() => _AppRouterState();
+}
+
+class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
+  DateTime? _lastResumeDate;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _lastResumeDate = DateTime.now();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _refreshIfNewDay();
+    }
+  }
+
+  void _refreshIfNewDay() {
+    final now = DateTime.now();
+    final lastDate = _lastResumeDate;
+
+    if (lastDate == null || now.day != lastDate.day || now.month != lastDate.month || now.year != lastDate.year) {
+      _lastResumeDate = now;
+      _refreshProviders();
+    }
+  }
+
+  void _refreshProviders() {
+    context.read<MoodProvider>().init();
+    context.read<StreakProvider>().init();
+    context.read<JournalProvider>().init();
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -28,15 +28,35 @@ class ProfileScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
+
+              // Header
               _buildHeader(context, userProvider),
+
               const SizedBox(height: 24),
+
+              // Stats row - at the top
               _buildStatsRow(streakProvider, journalProvider),
+
               const SizedBox(height: 24),
-              _buildGoalProgress(userProvider, streakProvider),
-              const SizedBox(height: 20),
+
+              // Total time card (if they've meditated)
+              if (streakProvider.totalMinutesMeditated > 0) ...[
+                _buildTotalTimeCard(streakProvider),
+                const SizedBox(height: 24),
+              ],
+
+              // Streak Calendar with insight label
+              _buildSectionLabel('Your Consistency', 'Activity over the last 30 days'),
+              const SizedBox(height: 12),
               const StreakCalendar(),
-              const SizedBox(height: 20),
+
+              const SizedBox(height: 24),
+
+              // Mood Chart with insight label
+              _buildSectionLabel('Mood Trends', 'How you\'ve been feeling this week'),
+              const SizedBox(height: 12),
               const MoodChart(),
+
               const SizedBox(height: 24),
             ],
           ),
@@ -49,10 +69,14 @@ class ProfileScreen extends StatelessWidget {
     return Row(
       children: [
         Container(
-          width: 64,
-          height: 64,
+          width: 56,
+          height: 56,
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.15),
+            gradient: LinearGradient(
+              colors: [AppColors.primary, AppColors.secondary],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             shape: BoxShape.circle,
           ),
           child: Center(
@@ -60,7 +84,7 @@ class ProfileScreen extends StatelessWidget {
               userProvider.userName?.isNotEmpty == true
                   ? userProvider.userName![0].toUpperCase()
                   : '?',
-              style: AppTextStyles.headline1.copyWith(color: AppColors.primary),
+              style: AppTextStyles.headline2.copyWith(color: AppColors.background),
             ),
           ),
         ),
@@ -73,21 +97,29 @@ class ProfileScreen extends StatelessWidget {
                 userProvider.userName ?? 'User',
                 style: AppTextStyles.headline2,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 '${userProvider.goalDays}-day journey',
-                style: AppTextStyles.body2,
+                style: AppTextStyles.caption,
               ),
             ],
           ),
         ),
-        IconButton(
-          onPressed: () {
+        GestureDetector(
+          onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const SettingsScreen()),
             );
           },
-          icon: const Icon(Icons.settings_outlined, color: AppColors.textSecondary),
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(Icons.settings_outlined, color: AppColors.textSecondary, size: 22),
+          ),
         ),
       ],
     );
@@ -116,7 +148,7 @@ class ProfileScreen extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: _StatCard(
-            icon: Icons.book,
+            icon: Icons.book_outlined,
             value: '${journalProvider.entries.length}',
             label: 'Entries',
             color: AppColors.streakFreeze,
@@ -126,48 +158,66 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildGoalProgress(UserProvider userProvider, StreakProvider streakProvider) {
-    final progress = (streakProvider.currentStreak / userProvider.goalDays).clamp(0.0, 1.0);
-    final daysLeft = (userProvider.goalDays - streakProvider.currentStreak).clamp(0, userProvider.goalDays);
-
+  Widget _buildTotalTimeCard(StreakProvider streakProvider) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(18),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.self_improvement, color: AppColors.primary, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  streakProvider.formattedTotalTime,
+                  style: AppTextStyles.headline2.copyWith(color: AppColors.primary),
+                ),
+                Text(
+                  'Total time meditated',
+                  style: AppTextStyles.caption,
+                ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const Text('Goal Progress', style: AppTextStyles.headline3),
-              const Spacer(),
               Text(
-                '${(progress * 100).toInt()}%',
-                style: AppTextStyles.label.copyWith(color: AppColors.primary),
+                '${streakProvider.totalSessions}',
+                style: AppTextStyles.headline3.copyWith(color: AppColors.textSecondary),
+              ),
+              Text(
+                'sessions',
+                style: AppTextStyles.caption.copyWith(fontSize: 10),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 12,
-              backgroundColor: AppColors.background,
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            progress >= 1.0
-                ? 'Congratulations! You completed your ${userProvider.goalDays}-day goal!'
-                : '$daysLeft days left to complete your goal',
-            style: AppTextStyles.body2,
-          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSectionLabel(String title, String subtitle) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: AppTextStyles.headline3),
+        const SizedBox(height: 2),
+        Text(subtitle, style: AppTextStyles.caption),
+      ],
     );
   }
 }
