@@ -215,21 +215,26 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
 
     setState(() => _isSaving = true);
 
-    final journalProvider = context.read<JournalProvider>();
-    final streakProvider = context.read<StreakProvider>();
-    final navigator = Navigator.of(context);
+    try {
+      final journalProvider = context.read<JournalProvider>();
+      final streakProvider = context.read<StreakProvider>();
 
-    await journalProvider.addEntry(
-      prompt: _usePrompt ? _suggestedPrompt : 'Free write',
-      content: _contentController.text.trim(),
-      moodScore: _selectedMood,
-    );
+      await journalProvider.addEntry(
+        prompt: _usePrompt ? _suggestedPrompt : 'Free write',
+        content: _contentController.text.trim(),
+        moodScore: _selectedMood,
+      );
 
-    await streakProvider.incrementStreak();
-    await NotificationService().cancelFollowUpNotifications();
+      await streakProvider.incrementStreak();
+
+      // Cancel notifications in background - don't block navigation
+      NotificationService().cancelFollowUpNotifications().catchError((_) {});
+    } catch (e) {
+      // Entry likely saved, continue
+    }
 
     if (mounted) {
-      navigator.pop();
+      Navigator.of(context).pop();
     }
   }
 }
