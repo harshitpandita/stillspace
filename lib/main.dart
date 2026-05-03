@@ -17,6 +17,7 @@ import 'services/notification_service.dart';
 import 'services/firebase_service.dart';
 import 'features/onboarding/screens/onboarding_screen.dart';
 import 'features/home/screens/main_screen.dart';
+import 'features/walkthrough/screens/walkthrough_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -139,6 +140,12 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
       builder: (context, userProvider, _) {
         if (!userProvider.isOnboardingComplete) {
           return const OnboardingScreen();
+        }
+        if (!userProvider.hasSeenWalkthrough) {
+          return WalkthroughScreen(
+            showSkip: true,
+            onComplete: () => userProvider.completeWalkthrough(),
+          );
         }
         return const MainScreen();
       },

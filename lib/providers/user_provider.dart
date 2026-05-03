@@ -5,12 +5,14 @@ import '../core/constants/app_constants.dart';
 
 class UserProvider extends ChangeNotifier {
   bool _isOnboardingComplete = false;
+  bool _hasSeenWalkthrough = false;
   String? _userName;
   int _goalDays = 21;
   String _notificationTime = '09:00';
   bool _notificationsEnabled = true;
 
   bool get isOnboardingComplete => _isOnboardingComplete;
+  bool get hasSeenWalkthrough => _hasSeenWalkthrough;
   String? get userName => _userName;
   int get goalDays => _goalDays;
   String get notificationTime => _notificationTime;
@@ -19,6 +21,7 @@ class UserProvider extends ChangeNotifier {
   Future<void> init() async {
     final box = Hive.box(AppConstants.hiveBoxUserProfile);
     _isOnboardingComplete = box.get('isOnboardingComplete', defaultValue: false);
+    _hasSeenWalkthrough = box.get('hasSeenWalkthrough', defaultValue: false);
     _userName = box.get('userName');
     _goalDays = box.get('goalDays', defaultValue: 21);
     _notificationTime = box.get('notificationTime', defaultValue: '09:00');
@@ -71,6 +74,13 @@ class UserProvider extends ChangeNotifier {
     final box = Hive.box(AppConstants.hiveBoxUserProfile);
     await box.put('userName', name);
     _userName = name;
+    notifyListeners();
+  }
+
+  Future<void> completeWalkthrough() async {
+    final box = Hive.box(AppConstants.hiveBoxUserProfile);
+    await box.put('hasSeenWalkthrough', true);
+    _hasSeenWalkthrough = true;
     notifyListeners();
   }
 }

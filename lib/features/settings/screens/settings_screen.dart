@@ -10,6 +10,7 @@ import '../../../providers/mood_provider.dart';
 import '../../../providers/journal_provider.dart';
 import '../../../services/notification_service.dart';
 import '../../../services/firebase_service.dart';
+import '../../walkthrough/screens/walkthrough_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -50,6 +51,18 @@ class SettingsScreen extends StatelessWidget {
               _GoalDaysTile(),
               const SizedBox(height: 32),
               _buildSectionHeader('About'),
+              const SizedBox(height: 12),
+              _buildTapTile(
+                context: context,
+                icon: Icons.explore_outlined,
+                title: 'Take a Tour',
+                subtitle: 'See what Stillspace can do',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const WalkthroughScreen(showSkip: false),
+                  ),
+                ),
+              ),
               const SizedBox(height: 12),
               _buildInfoTile(
                 icon: Icons.info_outline,
@@ -100,6 +113,42 @@ class SettingsScreen extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTapTile({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: AppColors.primary, size: 24),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: AppTextStyles.body1),
+                  const SizedBox(height: 2),
+                  Text(subtitle, style: AppTextStyles.caption),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+          ],
+        ),
       ),
     );
   }

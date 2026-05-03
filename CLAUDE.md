@@ -77,6 +77,9 @@ journal_entry.dart
 profile/
 screens/
 profile_screen.dart
+walkthrough/
+screens/
+walkthrough_screen.dart
 stats/
 widgets/
 streak_calendar.dart
@@ -297,6 +300,7 @@ Output: { sessionDuration, sessionType, promptMessage, notificationUrgency }
 - [x] Foreground day refresh (quotes/calendar update on new day)
 - [x] Streak explanation modal (how streaks work)
 - [x] Polish + APK (app-release.apk built)
+- [x] Walkthrough tutorial (5 screens: meditation, streaks, journaling, progress, cloud backup)
 
 ## Testing Onboarding
 To reset and test onboarding again, uncomment the Hive clear lines in main.dart (around line 48-52)
