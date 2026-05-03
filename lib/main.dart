@@ -48,12 +48,12 @@ Future<void> main() async {
   await Hive.openBox(AppConstants.hiveBoxStreakData);
 
   // UNCOMMENT TO CLEAR ALL HIVE DATA FOR TESTING ONBOARDING:
-  //await Hive.box(AppConstants.hiveBoxUserProfile).clear();
-  //await Hive.box(AppConstants.hiveBoxMoodLogs).clear();
-  //await Hive.box(AppConstants.hiveBoxJournalEntries).clear();
-  //await Hive.box(AppConstants.hiveBoxStreakData).clear();
+  // await Hive.box(AppConstants.hiveBoxUserProfile).clear();
+  // await Hive.box(AppConstants.hiveBoxMoodLogs).clear();
+  // await Hive.box(AppConstants.hiveBoxJournalEntries).clear();
+  // await Hive.box(AppConstants.hiveBoxStreakData).clear();
 
-  // Sign out from Firebase if local data was cleared (fresh install or data wipe)
+  // If local data is empty (fresh install / app reinstall), force re-onboarding by signing out
   final isOnboardingComplete = Hive.box(AppConstants.hiveBoxUserProfile)
       .get('isOnboardingComplete', defaultValue: false);
   if (!isOnboardingComplete && FirebaseService().isSignedIn) {

@@ -57,7 +57,6 @@ class StreakProvider extends ChangeNotifier {
 
   Future<void> _loadFromHive() async {
     final box = Hive.box(AppConstants.hiveBoxStreakData);
-    _currentStreak = box.get('currentStreak', defaultValue: 0);
     _longestStreak = box.get('longestStreak', defaultValue: 0);
     _freezesUsedThisWeek = box.get('freezesUsedThisWeek', defaultValue: 0);
     _goalDays = box.get('goalDays', defaultValue: 21);
@@ -79,6 +78,69 @@ class StreakProvider extends ChangeNotifier {
 
     final freezeList = box.get('freezeDates', defaultValue: <dynamic>[]) as List<dynamic>;
     _freezeDates.addAll(freezeList.cast<String>());
+
+    // Safety net: rebuild completed dates from journal entries in case streak data
+    // was lost or never reached the cloud (e.g. app closed mid-sync, fresh install + sign-in)
+    _reconcileFromJournalEntries();
+
+    // Always derive streak from completed dates — never trust the stored counter
+    _currentStreak = _recalculateCurrentStreak();
+    if (_currentStreak > _longestStreak) _longestStreak = _currentStreak;
+  }
+
+  void _reconcileFromJournalEntries() {
+    try {
+      final journalBox = Hive.box(AppConstants.hiveBoxJournalEntries);
+      final entries = journalBox.get('entries', defaultValue: <dynamic>[]) as List<dynamic>;
+      for (final entry in entries) {
+        final entryMap = Map<String, dynamic>.from(entry as Map);
+        final timestamp = entryMap['timestamp'];
+        DateTime? date;
+        if (timestamp is String) {
+          date = DateTime.tryParse(timestamp);
+        } else if (timestamp is int) {
+          date = DateTime.fromMillisecondsSinceEpoch(timestamp);
+        }
+        if (date != null) {
+          _completedDates.add(_dateKey(date));
+        }
+      }
+    } catch (_) {
+      // Journal box not yet open or malformed entries — skip silently
+    }
+  }
+
+  // Count consecutive days backwards from today using completedDates as the source of truth.
+  // Freeze dates count toward the streak (they represent a protected day).
+  int _recalculateCurrentStreak() {
+    if (_completedDates.isEmpty) return 0;
+
+    final today = DateTime.now();
+    final todayKey = _dateKey(today);
+    final yesterdayKey = _dateKey(today.subtract(const Duration(days: 1)));
+
+    // If neither today nor yesterday is done, streak is broken
+    final startKey = _completedDates.contains(todayKey) || _freezeDates.contains(todayKey)
+        ? todayKey
+        : (_completedDates.contains(yesterdayKey) || _freezeDates.contains(yesterdayKey))
+            ? yesterdayKey
+            : null;
+
+    if (startKey == null) return 0;
+
+    int streak = 0;
+    DateTime checkDate = today;
+    if (startKey == yesterdayKey) {
+      checkDate = today.subtract(const Duration(days: 1));
+    }
+
+    while (_completedDates.contains(_dateKey(checkDate)) ||
+        _freezeDates.contains(_dateKey(checkDate))) {
+      streak++;
+      checkDate = checkDate.subtract(const Duration(days: 1));
+    }
+
+    return streak;
   }
 
   Future<void> _saveToHive() async {
@@ -103,6 +165,10 @@ class StreakProvider extends ChangeNotifier {
       _freezesUsedThisWeek = 0;
     }
 
+    // Recalculate streak on every app open to catch missed days and day rollovers
+    _currentStreak = _recalculateCurrentStreak();
+    if (_currentStreak > _longestStreak) _longestStreak = _currentStreak;
+
     await _saveToHive();
     notifyListeners();
   }
@@ -116,22 +182,17 @@ class StreakProvider extends ChangeNotifier {
       _totalSessions++;
     }
 
-    if (_completedDates.contains(todayKey)) {
-      await _saveToHive();
-      notifyListeners();
-      return;
+    if (!_completedDates.contains(todayKey)) {
+      _completedDates.add(todayKey);
+      _lastCompletedDate = today;
+      _goalStartDate ??= today;
     }
 
-    _completedDates.add(todayKey);
-    _currentStreak++;
-
+    // Always recalculate from dates — never rely on the stored counter
+    _currentStreak = _recalculateCurrentStreak();
     if (_currentStreak > _longestStreak) {
       _longestStreak = _currentStreak;
     }
-
-    _lastCompletedDate = today;
-
-    _goalStartDate ??= today;
 
     await _saveToHive();
     notifyListeners();
