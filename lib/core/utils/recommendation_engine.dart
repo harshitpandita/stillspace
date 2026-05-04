@@ -52,20 +52,26 @@ class RecommendationEngine {
       return Recommendation(
         sessionDuration: 5,
         sessionType: SessionType.calming,
-        promptMessage: 'Welcome back. A short session can restart your momentum.',
-        journalPrompt: 'What got in the way yesterday? How can today be different?',
+        promptMessage:
+            'Welcome back. A short session can restart your momentum.',
+        journalPrompt:
+            'What got in the way yesterday? How can today be different?',
         urgency: Urgency.high,
       );
     }
 
     // Priority 3a: Lower mood + energizing window - Wim Hof breathing to shift state
-    if (moodScore != null && moodScore <= 3 && (isBeforeNoon || isLateEvening)) {
+    if (moodScore != null &&
+        moodScore <= 3 &&
+        (isBeforeNoon || isLateEvening)) {
       return Recommendation(
         sessionDuration: 10,
         sessionType: SessionType.wimHof,
-        promptMessage: 'Feeling heavy? Wim Hof breathing can shift your state in 10 minutes.',
-        journalPrompt: AppConstants.lowMoodJournalPrompts[
-            currentTime.millisecond % AppConstants.lowMoodJournalPrompts.length],
+        promptMessage:
+            'Feeling heavy? Wim Hof breathing can shift your state in 10 minutes.',
+        journalPrompt:
+            AppConstants.lowMoodJournalPrompts[currentTime.millisecond %
+                AppConstants.lowMoodJournalPrompts.length],
         urgency: Urgency.medium,
       );
     }
@@ -76,8 +82,9 @@ class RecommendationEngine {
         sessionDuration: 5,
         sessionType: SessionType.calming,
         promptMessage: 'Be gentle with yourself. Even 5 minutes can help.',
-        journalPrompt: AppConstants.lowMoodJournalPrompts[
-            currentTime.millisecond % AppConstants.lowMoodJournalPrompts.length],
+        journalPrompt:
+            AppConstants.lowMoodJournalPrompts[currentTime.millisecond %
+                AppConstants.lowMoodJournalPrompts.length],
         urgency: Urgency.medium,
       );
     }
@@ -98,7 +105,8 @@ class RecommendationEngine {
       return Recommendation(
         sessionDuration: 10,
         sessionType: SessionType.windDown,
-        promptMessage: 'End your day with calm. Let go of what you\'re carrying.',
+        promptMessage:
+            'End your day with calm. Let go of what you\'re carrying.',
         journalPrompt: 'What are you grateful for today?',
         urgency: Urgency.low,
       );
@@ -109,7 +117,8 @@ class RecommendationEngine {
       return Recommendation(
         sessionDuration: 10,
         sessionType: SessionType.energizing,
-        promptMessage: 'Start your day with intention. Set the tone for what\'s ahead.',
+        promptMessage:
+            'Start your day with intention. Set the tone for what\'s ahead.',
         journalPrompt: 'What do you want to focus on today?',
         urgency: Urgency.low,
       );

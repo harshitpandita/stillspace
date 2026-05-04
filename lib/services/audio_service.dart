@@ -6,11 +6,7 @@ import 'package:just_audio_background/just_audio_background.dart';
 import 'music_service.dart';
 import 'shared_audio_player.dart';
 
-enum MeditationSound {
-  none,
-  focus,
-  relax,
-}
+enum MeditationSound { none, focus, relax }
 
 class AudioService {
   static final AudioService _instance = AudioService._internal();
@@ -242,12 +238,7 @@ class AudioService {
   }) {
     return AudioSource.asset(
       assetPath,
-      tag: MediaItem(
-        id: id,
-        title: title,
-        album: 'Stillspace',
-        artist: artist,
-      ),
+      tag: MediaItem(id: id, title: title, album: 'Stillspace', artist: artist),
     );
   }
 

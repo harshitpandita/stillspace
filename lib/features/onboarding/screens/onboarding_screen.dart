@@ -53,7 +53,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Future<void> _completeOnboarding() async {
     setState(() => _isLoading = true);
 
-    final timeString = '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}';
+    final timeString =
+        '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}';
 
     await context.read<UserProvider>().completeOnboarding(
       name: _nameController.text.trim(),
@@ -83,7 +84,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 child: PageView(
                   controller: _pageController,
                   physics: const NeverScrollableScrollPhysics(),
-                  onPageChanged: (index) => setState(() => _currentStep = index),
+                  onPageChanged: (index) =>
+                      setState(() => _currentStep = index),
                   children: [
                     _buildNameStep(),
                     _buildGoalStep(),
@@ -142,13 +144,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight - 48),
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight - 48,
+              ),
               child: IntrinsicHeight(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 40),
-                    const Text("What's your name?", style: AppTextStyles.headline1),
+                    const Text(
+                      "What's your name?",
+                      style: AppTextStyles.headline1,
+                    ),
                     const SizedBox(height: 12),
                     Text(
                       "We'll use this to personalize your experience.",
@@ -171,7 +178,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                          borderSide: const BorderSide(
+                            color: AppColors.primary,
+                            width: 1.5,
+                          ),
                         ),
                       ),
                       onChanged: (_) => setState(() {}),
@@ -180,10 +190,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     const Spacer(),
                     PrimaryActionButton(
                       label: 'Continue',
-                      onPressed: _nameController.text.trim().isNotEmpty ? () {
-                        FocusScope.of(context).unfocus();
-                        _nextStep();
-                      } : null,
+                      onPressed: _nameController.text.trim().isNotEmpty
+                          ? () {
+                              FocusScope.of(context).unfocus();
+                              _nextStep();
+                            }
+                          : null,
                     ),
                     const SizedBox(height: 16),
                   ],
@@ -231,7 +243,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             color: AppColors.surface,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: isSelected ? AppColors.primary : Colors.transparent,
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : Colors.transparent,
                               width: 2,
                             ),
                           ),
@@ -240,7 +254,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               Text(
                                 '$days days',
                                 style: AppTextStyles.headline3.copyWith(
-                                  color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : AppColors.textPrimary,
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -252,14 +268,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 height: 24,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: isSelected ? AppColors.primary : Colors.transparent,
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : Colors.transparent,
                                   border: Border.all(
-                                    color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                                    color: isSelected
+                                        ? AppColors.primary
+                                        : AppColors.textSecondary,
                                     width: 2,
                                   ),
                                 ),
                                 child: isSelected
-                                    ? const Icon(Icons.check, size: 16, color: AppColors.background)
+                                    ? const Icon(
+                                        Icons.check,
+                                        size: 16,
+                                        color: AppColors.background,
+                                      )
                                     : null,
                               ),
                             ],
@@ -323,11 +347,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 }
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 32),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 48,
+                  vertical: 32,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Column(
                   children: [
@@ -346,7 +375,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
           ),
           const Spacer(),
-          PrimaryActionButton(label: 'Continue', onPressed: _requestPermissionsAndContinue),
+          PrimaryActionButton(
+            label: 'Continue',
+            onPressed: _requestPermissionsAndContinue,
+          ),
           const SizedBox(height: 16),
         ],
       ),
@@ -407,7 +439,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.notifications_outlined, color: AppColors.primary, size: 20),
+                const Icon(
+                  Icons.notifications_outlined,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'Daily reminder at ${_selectedTime.format(context)}',
@@ -433,10 +469,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
           // Secondary: Skip sign-in and continue
           TextButton(
-            onPressed: (_isLoading || _isSigningIn) ? null : _completeOnboarding,
+            onPressed: (_isLoading || _isSigningIn)
+                ? null
+                : _completeOnboarding,
             child: Text(
               'Skip — continue without backup',
-              style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
           ),
@@ -464,7 +504,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               const SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black54),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.black54,
+                ),
               )
             else ...[
               Container(

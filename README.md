@@ -1,148 +1,168 @@
 # Stillspace
 
-A mental wellness companion app built with Flutter, designed to help users build consistent mindfulness habits through meditation, journaling, and mood tracking.
+Stillspace is a dark-themed Flutter mental wellness app for building a consistent mindfulness habit. It combines meditation sessions, guided breathing, background music, mood tracking, journaling, streaks, reminders, progress charts, and offline-first storage.
 
 ## Features
 
-### Core Features
-- **Guided Meditation Sessions** - 5 to 30 minute sessions with breathing animation
-- **Ambient Sounds** - 2.5 Hz binaural beats for focus, brown noise for relaxation
-- **Bell Sounds** - Gentle bell at session start and end
-- **Mood Tracking** - 5-point emoji-based mood check-in with 2-hour intervals
-- **Reflective Journaling** - Guided prompts or free writing with mood tagging
-- **Streak System** - Daily consistency tracking with freeze protection
+### Meditation and Breathing
+- Custom meditation timer with 5 to 30 minute sessions
+- Gentle start and completion bell
+- Optional ambient sound during sessions
+- 2.5 Hz binaural focus audio and brown noise relaxation audio
+- Guided Wim Hof breathing session with audio-driven countdown
 
-### Extended Features
-- **Smart Recommendations** - Context-aware session suggestions based on mood, streak, time of day, and goal proximity
-- **Cloud Backup** - Google Sign-In with automatic Firestore sync
-- **Data Visualization** - 30-day streak calendar and 7-day mood trend chart
-- **Daily Wisdom** - 30 curated practical life insights
-- **Notification System** - Daily reminders with follow-ups
-- **App Walkthrough** - Interactive tutorial for new users
+### Music
+- Dedicated music section for ambient and frequency tracks
+- 15, 30, 60 minute, or open-ended music sessions
+- Background playback with lock-screen and notification controls
+- Mini player available above the bottom navigation
+- Music session timer pauses correctly and locks duration/track changes during active sessions
 
-## Screenshots
+### Mood, Journal, and Learn
+- Mood check-in on app open when needed, with a 2-hour cooldown
+- 5-point emoji mood selector
+- Reflective journaling with guided prompts and mood tags
+- Local-only journal images from camera or gallery
+- Offline Learn Meditation section with practical articles
+- Daily wisdom card with cached ZenQuotes API fallback and hardcoded offline quotes
 
-| Home | Meditation | Journal | Profile |
-|------|------------|---------|---------|
-| ![Home](screenshots/home.png) | ![Session](screenshots/session.png) | ![Journal](screenshots/journal.png) | ![Profile](screenshots/profile.png) |
+### Progress and Consistency
+- Streak system for completed meditation sessions or journal entries
+- Streak freeze support
+- Context-aware reminders and follow-ups
+- 30-day streak calendar
+- 7-day mood trend chart
+- Goal options for 7, 14, 21, or 30 days
+
+### Backup and Offline Support
+- Offline-first data storage with Hive
+- Optional Google Sign-In
+- Firestore sync on changes and once per day on app open
+- Local data remains usable without internet
 
 ## Tech Stack
 
-- **Framework**: Flutter (Android)
-- **State Management**: Provider
-- **Local Storage**: Hive (offline-first)
-- **Authentication**: Firebase Auth (Google Sign-In)
-- **Cloud Database**: Cloud Firestore
-- **Notifications**: flutter_local_notifications
-- **Charts**: fl_chart
-- **Audio**: just_audio
+- Flutter
+- Provider
+- Hive and hive_flutter
+- Firebase Auth
+- Cloud Firestore
+- flutter_local_notifications
+- fl_chart
+- just_audio
+- just_audio_background
+- image_picker
+- path_provider
+- http
 
-## Architecture
+## Project Structure
 
-```
+```text
 lib/
-├── core/
-│   ├── constants/      # App constants, prompts
-│   ├── theme/          # Colors, text styles, theme
-│   └── utils/          # Recommendation engine, date utils
-├── features/
-│   ├── home/           # Main dashboard
-│   ├── journal/        # Journal entries
-│   ├── mood/           # Mood check-in
-│   ├── onboarding/     # First-time setup
-│   ├── profile/        # User stats
-│   ├── session/        # Meditation timer
-│   ├── settings/       # App settings
-│   └── walkthrough/    # App tutorial
-├── providers/          # State management
-│   ├── user_provider.dart
-│   ├── mood_provider.dart
-│   ├── journal_provider.dart
-│   ├── session_provider.dart
-│   └── streak_provider.dart
-├── services/           # Business logic
-│   ├── audio_service.dart
-│   ├── firebase_service.dart
-│   ├── hive_service.dart
-│   └── notification_service.dart
-├── widgets/            # Reusable components
-└── main.dart
+  core/
+    constants/
+    theme/
+    utils/
+  features/
+    home/
+    journal/
+    learn/
+    mood/
+    music/
+    onboarding/
+    profile/
+    session/
+    settings/
+    walkthrough/
+  providers/
+  services/
+  widgets/
+  main.dart
+assets/
+  audio/
+  data/
+  icon/
+test/
 ```
 
-## Setup Instructions
+## Recommendation Engine
+
+Stillspace uses a rule-based recommendation engine that considers:
+
+- mood score
+- current streak
+- days left in the user's goal
+- whether yesterday was missed
+- time of day
+
+Current priority order:
+
+1. Goal is close, 3 days or fewer left: urgent focus session
+2. Missed yesterday: short calming session
+3. Mood is 3 or lower before noon or late evening: Wim Hof breathing
+4. Mood is 2 or lower outside those windows: short calming session
+5. High mood with strong streak: longer focus session
+6. Evening: wind-down session
+7. Morning: energizing session
+8. Default: standard mindfulness session
+
+## Audio Notes
+
+The app uses `just_audio_background`, which supports a single active background audio player. Stillspace routes music, meditation ambience, bells, and guided breathing through a shared audio player so music and meditation do not fight each other.
+
+The start bell plays before meditation ambience. If `assets/audio/bell-sound.mp3` is replaced with a shorter file at the same path, the app will use it without code changes.
+
+## Setup
 
 ### Prerequisites
-- Flutter SDK (3.11.3+)
-- Android Studio / VS Code
-- Android device or emulator
 
-### Installation
+- Flutter SDK
+- Android Studio or VS Code
+- Android emulator or Android device
+- Firebase project configuration already present in the app
 
-1. Clone the repository
-```bash
-git clone https://github.com/harshitpandita/stillspace.git
-cd stillspace
-```
+### Install
 
-2. Install dependencies
-```bash
+```powershell
 flutter pub get
 ```
 
-3. Run the app
-```bash
+### Run
+
+```powershell
 flutter run
 ```
 
-4. Build release APK
-```bash
-flutter build apk --release
-```
+### Test
 
-APK location: `build/app/outputs/flutter-apk/app-release.apk`
-
-## State Management
-
-The app uses Provider for state management with 5 main providers:
-
-| Provider | Purpose |
-|----------|---------|
-| UserProvider | User profile, onboarding state, settings |
-| MoodProvider | Mood logs, daily averages, check-in logic |
-| JournalProvider | Journal entries, CRUD operations |
-| SessionProvider | Active session state |
-| StreakProvider | Streak tracking, freeze system, completion dates |
-
-All providers follow offline-first approach: write to Hive first, then sync to Firestore.
-
-## Custom Logic: Recommendation Engine
-
-The app includes a rule-based recommendation engine that suggests personalized sessions:
-
-**Priority Order:**
-1. Goal proximity (≤3 days left) - Urgent focus session
-2. Missed yesterday - Short calming session to restart
-3. Low mood (≤2) - Gentle 5-min calming session
-4. High mood + strong streak - Longer focus session
-5. Evening time - Wind-down session
-6. Morning time - Energizing session
-7. Default - Standard mindfulness session
-
-## Testing
-
-Run tests:
-```bash
+```powershell
+flutter analyze
 flutter test
 ```
 
-**Test Coverage:**
-- 6 widget tests (PrimaryActionButton)
-- 11 unit tests (RecommendationEngine)
+### Build Release APK
 
-## License
+```powershell
+flutter build apk --release
+```
 
-This project is for educational purposes.
+Output:
+
+```text
+build/app/outputs/flutter-apk/app-release.apk
+```
+
+## Tests
+
+Current automated coverage includes:
+
+- PrimaryActionButton widget tests
+- RecommendationEngine unit tests
 
 ## Author
 
 Harshit Pandita
+
+## License
+
+Educational project.

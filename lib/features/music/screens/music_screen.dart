@@ -79,7 +79,11 @@ class _MusicScreenState extends State<MusicScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.lock_outline, color: AppColors.primary, size: 16),
+                    const Icon(
+                      Icons.lock_outline,
+                      color: AppColors.primary,
+                      size: 16,
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -116,7 +120,9 @@ class _MusicScreenState extends State<MusicScreen> {
             child: Text(
               opt.label,
               style: AppTextStyles.label.copyWith(
-                color: isSelected ? AppColors.background : AppColors.textPrimary,
+                color: isSelected
+                    ? AppColors.background
+                    : AppColors.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -135,10 +141,12 @@ class _MusicScreenState extends State<MusicScreen> {
         children: [
           Text(category, style: AppTextStyles.headline3),
           const SizedBox(height: 12),
-          ...tracks.map((track) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: _buildTrackCard(track),
-              )),
+          ...tracks.map(
+            (track) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: _buildTrackCard(track),
+            ),
+          ),
         ],
       ),
     );
@@ -157,10 +165,14 @@ class _MusicScreenState extends State<MusicScreen> {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: isCurrent ? AppColors.primary.withValues(alpha: 0.1) : AppColors.surface,
+            color: isCurrent
+                ? AppColors.primary.withValues(alpha: 0.1)
+                : AppColors.surface,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: isCurrent ? AppColors.primary.withValues(alpha: 0.5) : Colors.transparent,
+              color: isCurrent
+                  ? AppColors.primary.withValues(alpha: 0.5)
+                  : Colors.transparent,
               width: 1.5,
             ),
           ),
@@ -182,7 +194,10 @@ class _MusicScreenState extends State<MusicScreen> {
                   children: [
                     Text(track.title, style: AppTextStyles.label),
                     const SizedBox(height: 2),
-                    Text(track.description, style: AppTextStyles.caption.copyWith(fontSize: 11)),
+                    Text(
+                      track.description,
+                      style: AppTextStyles.caption.copyWith(fontSize: 11),
+                    ),
                   ],
                 ),
               ),
@@ -198,8 +213,8 @@ class _MusicScreenState extends State<MusicScreen> {
                   isLocked
                       ? Icons.lock_outline
                       : isPlaying
-                          ? Icons.pause
-                          : Icons.play_arrow,
+                      ? Icons.pause
+                      : Icons.play_arrow,
                   color: isCurrent ? AppColors.background : AppColors.primary,
                   size: isLocked ? 18 : 22,
                 ),
@@ -228,7 +243,10 @@ class _MusicScreenState extends State<MusicScreen> {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.4), width: 1.5),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.4),
+          width: 1.5,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -243,7 +261,11 @@ class _MusicScreenState extends State<MusicScreen> {
             ),
           ),
           const SizedBox(height: 4),
-          Text(track.title, style: AppTextStyles.headline2, textAlign: TextAlign.center),
+          Text(
+            track.title,
+            style: AppTextStyles.headline2,
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 24),
           _buildCountdownRing(track, remaining, progress),
           const SizedBox(height: 24),
@@ -253,7 +275,9 @@ class _MusicScreenState extends State<MusicScreen> {
             children: [
               Expanded(
                 child: GestureDetector(
-                  onTap: _music.isPlaying ? () => _music.pause() : () => _music.resume(),
+                  onTap: _music.isPlaying
+                      ? () => _music.pause()
+                      : () => _music.resume(),
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     decoration: BoxDecoration(
@@ -288,12 +312,19 @@ class _MusicScreenState extends State<MusicScreen> {
               GestureDetector(
                 onTap: () => _music.stop(),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 14,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.surface,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.stop, color: AppColors.error, size: 20),
+                  child: const Icon(
+                    Icons.stop,
+                    color: AppColors.error,
+                    size: 20,
+                  ),
                 ),
               ),
             ],
@@ -303,7 +334,11 @@ class _MusicScreenState extends State<MusicScreen> {
     );
   }
 
-  Widget _buildCountdownRing(MusicTrack track, Duration? remaining, double? progress) {
+  Widget _buildCountdownRing(
+    MusicTrack track,
+    Duration? remaining,
+    double? progress,
+  ) {
     return SizedBox(
       width: 200,
       height: 200,
@@ -318,7 +353,9 @@ class _MusicScreenState extends State<MusicScreen> {
               value: progress != null ? (1.0 - progress) : 1.0,
               strokeWidth: 6,
               backgroundColor: AppColors.background,
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                AppColors.primary,
+              ),
             ),
           ),
           Container(
@@ -341,13 +378,21 @@ class _MusicScreenState extends State<MusicScreen> {
                       fontSize: 28,
                     ),
                   ),
-                  Text('remaining', style: AppTextStyles.caption.copyWith(fontSize: 10)),
+                  Text(
+                    'remaining',
+                    style: AppTextStyles.caption.copyWith(fontSize: 10),
+                  ),
                 ] else ...[
                   Text(
                     'Playing',
-                    style: AppTextStyles.headline3.copyWith(color: AppColors.primary),
+                    style: AppTextStyles.headline3.copyWith(
+                      color: AppColors.primary,
+                    ),
                   ),
-                  Text('Until you stop', style: AppTextStyles.caption.copyWith(fontSize: 10)),
+                  Text(
+                    'Until you stop',
+                    style: AppTextStyles.caption.copyWith(fontSize: 10),
+                  ),
                 ],
               ],
             ),
@@ -396,8 +441,12 @@ class _MusicScreenState extends State<MusicScreen> {
     final hours = d.inHours;
     final minutes = d.inMinutes % 60;
     final seconds = d.inSeconds % 60;
-    if (hours > 0) return '${hours}h ${minutes}m';
-    if (minutes > 0) return '${minutes}m ${seconds.toString().padLeft(2, '0')}s';
+    if (hours > 0) {
+      return '${hours}h ${minutes}m';
+    }
+    if (minutes > 0) {
+      return '${minutes}m ${seconds.toString().padLeft(2, '0')}s';
+    }
     return '${seconds}s';
   }
 }

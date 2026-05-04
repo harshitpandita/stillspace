@@ -121,3 +121,6 @@ app.*.symbols
 # Claude Code (keep local, not in repo)
 CLAUDE.md
 .claude/
+
+# Local project/reporting docs
+PROJECT_REPORT.md

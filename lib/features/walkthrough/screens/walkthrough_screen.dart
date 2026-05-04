@@ -22,32 +22,57 @@ class _WalkthroughScreenState extends State<WalkthroughScreen> {
     _WalkthroughPage(
       icon: Icons.wb_sunny_outlined,
       title: 'Daily Check-In',
-      description: 'Start with your mood, then get gentle suggestions that fit your day.',
-      features: ['Mood check-ins every few hours', 'Personal session recommendations', 'Daily wisdom on Home'],
+      description:
+          'Start with your mood, then get gentle suggestions that fit your day.',
+      features: [
+        'Mood check-ins every few hours',
+        'Personal session recommendations',
+        'Daily wisdom on Home',
+      ],
     ),
     _WalkthroughPage(
       icon: Icons.self_improvement,
       title: 'Meditate and Breathe',
-      description: 'Use silent timers, ambient sound, or guided breathwork when you need a reset.',
-      features: ['5 to 30 minute sessions', 'Focus tones and brown noise', 'Guided Wim Hof breathing'],
+      description:
+          'Use silent timers, ambient sound, or guided breathwork when you need a reset.',
+      features: [
+        '5 to 30 minute sessions',
+        'Focus tones and brown noise',
+        'Guided Wim Hof breathing',
+      ],
     ),
     _WalkthroughPage(
       icon: Icons.graphic_eq,
       title: 'Music for Focus',
-      description: 'Play calm soundscapes in the background with a timer and quick controls.',
-      features: ['Ambient and frequency tracks', '15, 30, or 60 minute sessions', 'Mini player from any tab'],
+      description:
+          'Play calm soundscapes in the background with a timer and quick controls.',
+      features: [
+        'Ambient and frequency tracks',
+        '15, 30, or 60 minute sessions',
+        'Mini player from any tab',
+      ],
     ),
     _WalkthroughPage(
       icon: Icons.edit_note,
       title: 'Journal and Learn',
-      description: 'Reflect, attach local images, and build a practical understanding of meditation.',
-      features: ['Guided prompts and mood tags', 'Private local journal images', 'Offline Learn articles'],
+      description:
+          'Reflect, attach local images, and build a practical understanding of meditation.',
+      features: [
+        'Guided prompts and mood tags',
+        'Private local journal images',
+        'Offline Learn articles',
+      ],
     ),
     _WalkthroughPage(
       icon: Icons.insights,
       title: 'Progress That Sticks',
-      description: 'Stay consistent with streaks, reminders, progress charts, and backup.',
-      features: ['Streak calendar and mood chart', 'Daily reminders and follow-ups', 'Google backup with daily sync'],
+      description:
+          'Stay consistent with streaks, reminders, progress charts, and backup.',
+      features: [
+        'Streak calendar and mood chart',
+        'Daily reminders and follow-ups',
+        'Google backup with daily sync',
+      ],
     ),
   ];
 
@@ -104,7 +129,9 @@ class _WalkthroughScreenState extends State<WalkthroughScreen> {
               onPressed: _finish,
               child: Text(
                 'Skip',
-                style: AppTextStyles.label.copyWith(color: AppColors.textSecondary),
+                style: AppTextStyles.label.copyWith(
+                  color: AppColors.textSecondary,
+                ),
               ),
             ),
         ],
@@ -125,7 +152,9 @@ class _WalkthroughScreenState extends State<WalkthroughScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: PrimaryActionButton(
-                label: _currentPage == _pages.length - 1 ? 'Get Started' : 'Next',
+                label: _currentPage == _pages.length - 1
+                    ? 'Get Started'
+                    : 'Next',
                 onPressed: _nextPage,
               ),
             ),
@@ -149,11 +178,7 @@ class _WalkthroughScreenState extends State<WalkthroughScreen> {
               color: AppColors.primary.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              page.icon,
-              color: AppColors.primary,
-              size: 56,
-            ),
+            child: Icon(page.icon, color: AppColors.primary, size: 56),
           ),
           const SizedBox(height: 40),
           Text(
@@ -168,33 +193,37 @@ class _WalkthroughScreenState extends State<WalkthroughScreen> {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
-          ...page.features.map((feature) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              children: [
-                Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.15),
-                    shape: BoxShape.circle,
+          ...page.features.map(
+            (feature) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      color: AppColors.primary,
+                      size: 14,
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.check,
-                    color: AppColors.primary,
-                    size: 14,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      feature,
+                      style: AppTextStyles.body2.copyWith(
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    feature,
-                    style: AppTextStyles.body2.copyWith(color: AppColors.textPrimary),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          )),
+          ),
         ],
       ),
     );
@@ -211,7 +240,9 @@ class _WalkthroughScreenState extends State<WalkthroughScreen> {
           width: _currentPage == index ? 24 : 8,
           height: 8,
           decoration: BoxDecoration(
-            color: _currentPage == index ? AppColors.primary : AppColors.surface,
+            color: _currentPage == index
+                ? AppColors.primary
+                : AppColors.surface,
             borderRadius: BorderRadius.circular(4),
           ),
         ),
