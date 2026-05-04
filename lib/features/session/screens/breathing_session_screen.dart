@@ -26,8 +26,11 @@ class _BreathingSessionScreenState extends State<BreathingSessionScreen>
 
   StreamSubscription<Duration>? _posSub;
   StreamSubscription<PlayerState>? _stateSub;
+  Timer? _fallbackTimer;
+  final Stopwatch _fallbackClock = Stopwatch();
 
   Duration _elapsed = Duration.zero;
+  DateTime? _lastAudioPositionAt;
   bool _isRunning = false;
   bool _isComplete = false;
   bool _isPaused = false;
@@ -46,28 +49,37 @@ class _BreathingSessionScreenState extends State<BreathingSessionScreen>
   void dispose() {
     _posSub?.cancel();
     _stateSub?.cancel();
+    _stopFallbackTimer();
     _breathController.dispose();
     _audio.stopGuided();
     super.dispose();
   }
 
   Future<void> _start() async {
+    _elapsed = Duration.zero;
+    _fallbackClock
+      ..reset()
+      ..start();
+    _lastAudioPositionAt = DateTime.now();
+
     setState(() {
       _isRunning = true;
       _isPaused = false;
     });
     _breathController.repeat(reverse: true);
+    _startFallbackTimer();
 
     // Subscribe BEFORE play() so we don't miss the early position updates
     _posSub = _audio.guidedPositionStream.listen((pos) {
       if (!mounted) return;
+      _lastAudioPositionAt = DateTime.now();
       setState(() => _elapsed = pos);
     });
 
     _stateSub = _audio.guidedStateStream.listen((state) {
       if (!mounted) return;
       if (state.processingState == ProcessingState.completed && !_isComplete) {
-        _completeSession();
+        unawaited(_completeSession());
       }
     });
 
@@ -76,6 +88,8 @@ class _BreathingSessionScreenState extends State<BreathingSessionScreen>
 
   Future<void> _pause() async {
     await _audio.pauseGuided();
+    _fallbackClock.stop();
+    _stopFallbackTimer();
     _breathController.stop();
     setState(() {
       _isRunning = false;
@@ -85,6 +99,9 @@ class _BreathingSessionScreenState extends State<BreathingSessionScreen>
 
   Future<void> _resume() async {
     await _audio.resumeGuided();
+    _fallbackClock.start();
+    _lastAudioPositionAt = DateTime.now();
+    _startFallbackTimer();
     _breathController.repeat(reverse: true);
     setState(() {
       _isRunning = true;
@@ -94,6 +111,8 @@ class _BreathingSessionScreenState extends State<BreathingSessionScreen>
 
   Future<void> _completeSession() async {
     _breathController.stop();
+    _fallbackClock.stop();
+    _stopFallbackTimer();
     await _audio.stopGuided();
 
     if (!mounted) return;
@@ -123,6 +142,33 @@ class _BreathingSessionScreenState extends State<BreathingSessionScreen>
   double get _progress {
     if (widget.session.durationSeconds == 0) return 0;
     return (_elapsed.inMilliseconds / (widget.session.durationSeconds * 1000)).clamp(0.0, 1.0);
+  }
+
+  void _startFallbackTimer() {
+    _fallbackTimer?.cancel();
+    _fallbackTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted || !_isRunning || _isComplete) return;
+
+      final lastPositionAt = _lastAudioPositionAt;
+      final positionIsStale = lastPositionAt == null ||
+          DateTime.now().difference(lastPositionAt) > const Duration(seconds: 2);
+
+      if (!positionIsStale) return;
+
+      final total = Duration(seconds: widget.session.durationSeconds);
+      final fallbackElapsed = _fallbackClock.elapsed;
+      final nextElapsed = fallbackElapsed > total ? total : fallbackElapsed;
+      setState(() => _elapsed = nextElapsed);
+
+      if (nextElapsed >= total) {
+        unawaited(_completeSession());
+      }
+    });
+  }
+
+  void _stopFallbackTimer() {
+    _fallbackTimer?.cancel();
+    _fallbackTimer = null;
   }
 
   @override

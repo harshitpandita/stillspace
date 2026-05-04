@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import '../features/music/models/music_track.dart';
+import 'shared_audio_player.dart';
 
 class MusicService extends ChangeNotifier {
   static final MusicService _instance = MusicService._internal();
@@ -24,10 +25,11 @@ class MusicService extends ChangeNotifier {
     });
   }
 
-  final AudioPlayer _player = AudioPlayer();
+  final AudioPlayer _player = SharedAudioPlayer().player;
   StreamSubscription<PlayerState>? _stateSub;
   StreamSubscription<Duration>? _posSub;
   DateTime? _lastPosNotify;
+  final SharedAudioPlayer _sharedAudio = SharedAudioPlayer();
 
   MusicTrack? _currentTrack;
   Duration? _sessionDuration; // null = until manually stopped
@@ -63,6 +65,7 @@ class MusicService extends ChangeNotifier {
       _currentTrack = track;
       _sessionDuration = duration;
       _sessionStartedAt = DateTime.now();
+      _sharedAudio.claimPlayback();
 
       _autoStopTimer?.cancel();
       if (duration != null) {
@@ -91,6 +94,16 @@ class MusicService extends ChangeNotifier {
     }
   }
 
+  Future<void> releaseForMeditationPlayback() {
+    _autoStopTimer?.cancel();
+    _autoStopTimer = null;
+    _sessionDuration = null;
+    _sessionStartedAt = null;
+    _currentTrack = null;
+    notifyListeners();
+    return Future.value();
+  }
+
   Future<void> pause() async {
     await _player.pause();
     notifyListeners();
@@ -107,6 +120,7 @@ class MusicService extends ChangeNotifier {
     _sessionDuration = null;
     _sessionStartedAt = null;
     _currentTrack = null;
+    _sharedAudio.claimPlayback();
     await _player.stop();
     notifyListeners();
   }
@@ -122,7 +136,6 @@ class MusicService extends ChangeNotifier {
     _stateSub?.cancel();
     _posSub?.cancel();
     _autoStopTimer?.cancel();
-    _player.dispose();
     super.dispose();
   }
 }

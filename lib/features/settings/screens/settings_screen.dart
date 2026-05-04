@@ -324,7 +324,7 @@ class _TestNotificationTileState extends State<_TestNotificationTile> {
           ? () async {
               setState(() => _isTesting = true);
               await NotificationService().scheduleTestNotification();
-              if (mounted) {
+              if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Test notification scheduled in 5 seconds'),

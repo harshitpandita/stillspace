@@ -77,18 +77,13 @@ class _SessionScreenState extends State<SessionScreen> with TickerProviderStateM
     // Start timer immediately
     _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
 
-    // Play bell after 1.5 second delay
-    Future.delayed(const Duration(milliseconds: 1500), () {
-      if (mounted && _isRunning) {
-        _audioService.playBell();
-      }
-    });
-
-    // Play ambient audio in background (don't await)
-    if (widget.sound != MeditationSound.none) {
-      _audioService.setVolume(_volume);
-      _audioService.playSound(widget.sound);
-    }
+    // Play the start bell first; ambient begins after the bell finishes.
+    unawaited(
+      _audioService.startSessionAudio(
+        sound: widget.sound,
+        volume: _volume,
+      ),
+    );
   }
 
   void _pauseSession() {
