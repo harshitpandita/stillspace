@@ -55,10 +55,14 @@ dependencies:
 
   # Audio
   just_audio: ^0.9.42
+  just_audio_background: ^0.0.1-beta.13
 
   # Image picker (gallery + camera) for journal images — local storage only
   image_picker: ^1.1.2
   path_provider: ^2.1.5
+
+  # HTTP for ZenQuotes API (daily wisdom)
+  http: ^1.2.2
 
 dev_dependencies:
   flutter_test:
@@ -106,6 +110,7 @@ flutter:
   assets:
     - assets/audio/
     - assets/icon/
+    - assets/data/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

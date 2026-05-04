@@ -1,6 +1,7 @@
 // Home screen - main dashboard with greeting, recommendations, journey path, daily wisdom
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/recommendation_engine.dart';
@@ -8,7 +9,10 @@ import '../../../providers/user_provider.dart';
 import '../../../providers/streak_provider.dart';
 import '../../../providers/mood_provider.dart';
 import '../../../services/audio_service.dart';
+import '../../../services/wisdom_service.dart';
+import '../../learn/screens/learn_screen.dart';
 import '../../mood/screens/mood_checkin_screen.dart';
+import '../../music/screens/music_screen.dart';
 import '../../session/data/breathing_sessions.dart';
 import '../../session/screens/breathing_session_screen.dart';
 import '../../session/screens/meditate_screen.dart';
@@ -18,56 +22,11 @@ import '../../settings/screens/settings_screen.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  static const List<String> _dailyWisdom = [
-    // Practical daily life wisdom
-"​If it takes less than five minutes, do it now—future you will thank you.",
-"​Avoiding a task doesn’t remove it; it just adds anxiety on top of it.",
-"​You don’t need motivation—you need a start. Momentum creates motivation.",
-"​Clarity comes from action, not overthinking.",
-"​If you keep saying yes to everything, don’t be surprised when nothing improves.",
-"​What you tolerate becomes your standard.",
-"​Rest before you burn out, not after.",
-"​If you wouldn’t take their advice, don’t take their criticism.",
-"​You can’t control outcomes, but you can control preparation.",
-"​Small daily decisions compound into a life you either want or regret.",
-
-// Osho / ancient / spiritual-style but practical
-"​Watch your thoughts like clouds—don’t build a home under every storm.",
-"​What you resist persists; what you accept, you can change.",
-"​Act fully in the moment, and regret disappears on its own.",
-"​Attachment is the root of suffering; learn to hold things lightly.",
-"​You don’t find peace by fixing the world, but by understanding your mind.",
-
-// Grounded psychological / therapist-style
-"​Feelings deserve attention, not automatic obedience.",
-"​You don’t need everyone to understand you to be valid.",
-"​Silence is often a clearer answer than overexplaining.",
-"​If you keep abandoning yourself, no relationship will feel safe.",
-"​Closure rarely comes from others—it comes from deciding you’re done.",
-"​Loneliness decreases when you build a life you actually enjoy living.",
-"​Not every thought needs to be believed, and not every emotion needs to be acted on.",
-"​You can miss someone and still know they’re not good for you.",
-"​Healing isn’t becoming someone new—it’s returning to what was always there.",
-"​Your patterns will repeat until you interrupt them consciously.",
-
-// Daily applicable execution mindset
-"​Start before you’re ready; ready is a moving target.",
-"​If it’s important, schedule it. If it’s not scheduled, it’s optional.",
-"​Discipline is choosing what you want most over what you want now.",
-"​The hard conversation saves more time than avoiding it ever will.",
-"​Stop solving problems that don’t exist yet—deal with what’s real.",
-  ];
-
   String _getGreeting() {
     final hour = DateTime.now().hour;
     if (hour < 12) return 'Good morning';
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
-  }
-
-  String _getDailyWisdom() {
-    final dayOfYear = DateTime.now().difference(DateTime(DateTime.now().year, 1, 1)).inDays;
-    return _dailyWisdom[dayOfYear % _dailyWisdom.length];
   }
 
   @override
@@ -133,6 +92,16 @@ class HomeScreen extends StatelessWidget {
 
                 // Custom session
                 _buildCustomSessionCard(context),
+
+                const SizedBox(height: 12),
+
+                // Music section (not part of recommendation engine)
+                _buildMusicCard(context),
+
+                const SizedBox(height: 12),
+
+                // Learn Meditation (offline static content)
+                _buildLearnCard(context),
 
                 const SizedBox(height: 28),
 
@@ -408,6 +377,108 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildMusicCard(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const MusicScreen()),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(Icons.headphones, color: AppColors.primary, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Music', style: AppTextStyles.label),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Ambient sounds and frequencies for any mood',
+                    style: AppTextStyles.caption,
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.arrow_forward, color: AppColors.primary, size: 18),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLearnCard(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const LearnScreen()),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: AppColors.secondary.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(Icons.menu_book_outlined, color: AppColors.secondary, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Learn Meditation', style: AppTextStyles.label),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Practical reads on techniques and benefits',
+                    style: AppTextStyles.caption,
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.arrow_forward, color: AppColors.secondary, size: 18),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildWisdomCard() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -433,12 +504,20 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Text(
-            _getDailyWisdom(),
-            style: AppTextStyles.body1.copyWith(
-              height: 1.6,
-              color: AppColors.textPrimary,
-            ),
+          FutureBuilder<String>(
+            future: WisdomService().getTodaysQuote(),
+            builder: (context, snapshot) {
+              final quote = snapshot.data ??
+                  AppConstants.hardcodedWisdom[
+                      DateTime.now().day % AppConstants.hardcodedWisdom.length];
+              return Text(
+                quote,
+                style: AppTextStyles.body1.copyWith(
+                  height: 1.6,
+                  color: AppColors.textPrimary,
+                ),
+              );
+            },
           ),
         ],
       ),

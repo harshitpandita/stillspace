@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 
 import 'core/theme/app_theme.dart';
 import 'core/theme/app_colors.dart';
@@ -31,15 +32,19 @@ Future<void> main() async {
     ),
   );
 
-  await Firebase.initializeApp(
-    options: const FirebaseOptions(
-      apiKey: 'AIzaSyCyu06SXeik4yMge3wkgfWZ5RKHgthKZ6k',
-      appId: '1:706859686171:android:cf7082380ac8a62d38dbbe',
-      messagingSenderId: '706859686171',
-      projectId: 'stillspace-670ef',
-      storageBucket: 'stillspace-670ef.firebasestorage.app',
-    ),
-  );
+  // Guard against duplicate init on hot restart — the native FirebaseApp is
+  // long-lived across Dart isolate restarts, so re-calling initializeApp throws.
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: 'AIzaSyCyu06SXeik4yMge3wkgfWZ5RKHgthKZ6k',
+        appId: '1:706859686171:android:cf7082380ac8a62d38dbbe',
+        messagingSenderId: '706859686171',
+        projectId: 'stillspace-670ef',
+        storageBucket: 'stillspace-670ef.firebasestorage.app',
+      ),
+    );
+  }
 
   await Hive.initFlutter();
   await Hive.openBox(AppConstants.hiveBoxUserProfile);
@@ -61,6 +66,14 @@ Future<void> main() async {
   }
 
   await NotificationService().init();
+
+  // Foreground service + lock-screen controls for the music player
+  await JustAudioBackground.init(
+    androidNotificationChannelId: 'com.harshitpandita.stillspace.music',
+    androidNotificationChannelName: 'Stillspace Music',
+    androidNotificationOngoing: true,
+    androidStopForegroundOnPause: true,
+  );
 
   runApp(const StillspaceApp());
 }
