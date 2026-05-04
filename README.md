@@ -44,12 +44,12 @@ Stillspace is a dark-themed Flutter mental wellness app for building a consisten
 
 <!-- Add screenshots here -->
 
-![Home Screen](screenshots/home.jpg)
-![Meditation Session](screenshots/meditation.jpg)
-![Music Player](screenshots/music.jpg)
-![Journal Entry](screenshots/journal.jpg)
-![Mood Check-In](screenshots/mood.jpg)
-![Profile with Charts](screenshots/profile.jpg)
+![Home Screen](screenshots/home.jpeg)
+![Meditation Session](screenshots/meditation.jpeg)
+![Music Player](screenshots/music.jpeg)
+![Journal Entry](screenshots/journal.jpeg)
+![Mood Check-In](screenshots/mood.jpeg)
+![Profile with Charts](screenshots/profile.jpeg)
 
 ## Tech Stack
 
