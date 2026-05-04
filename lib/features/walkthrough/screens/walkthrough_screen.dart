@@ -20,34 +20,34 @@ class _WalkthroughScreenState extends State<WalkthroughScreen> {
 
   final List<_WalkthroughPage> _pages = [
     _WalkthroughPage(
-      icon: Icons.self_improvement,
-      title: 'Meditation Sessions',
-      description: 'Choose your duration and ambient sound. A gentle bell marks the start and end of each session.',
-      features: ['5 to 30 minute sessions', '2.5 Hz binaural beats for focus', 'Brown noise for relaxation'],
+      icon: Icons.wb_sunny_outlined,
+      title: 'Daily Check-In',
+      description: 'Start with your mood, then get gentle suggestions that fit your day.',
+      features: ['Mood check-ins every few hours', 'Personal session recommendations', 'Daily wisdom on Home'],
     ),
     _WalkthroughPage(
-      icon: Icons.local_fire_department,
-      title: 'Build Your Streak',
-      description: 'Stay consistent and watch your streak grow. Complete a session or write a journal entry each day.',
-      features: ['Streak freeze protects missed days', 'Set 7, 14, 21, or 30 day goals', 'Track your journey visually'],
+      icon: Icons.self_improvement,
+      title: 'Meditate and Breathe',
+      description: 'Use silent timers, ambient sound, or guided breathwork when you need a reset.',
+      features: ['5 to 30 minute sessions', 'Focus tones and brown noise', 'Guided Wim Hof breathing'],
+    ),
+    _WalkthroughPage(
+      icon: Icons.graphic_eq,
+      title: 'Music for Focus',
+      description: 'Play calm soundscapes in the background with a timer and quick controls.',
+      features: ['Ambient and frequency tracks', '15, 30, or 60 minute sessions', 'Mini player from any tab'],
     ),
     _WalkthroughPage(
       icon: Icons.edit_note,
-      title: 'Reflective Journaling',
-      description: 'Capture your thoughts with guided prompts or free writing. Journaling counts toward your streak too.',
-      features: ['Thoughtful daily prompts', 'Tag entries with your mood', 'Private and stored locally'],
+      title: 'Journal and Learn',
+      description: 'Reflect, attach local images, and build a practical understanding of meditation.',
+      features: ['Guided prompts and mood tags', 'Private local journal images', 'Offline Learn articles'],
     ),
     _WalkthroughPage(
       icon: Icons.insights,
-      title: 'Track Your Progress',
-      description: 'See your consistency at a glance with the streak calendar and mood trends over time.',
-      features: ['30-day streak calendar', '7-day mood chart', 'Total meditation time'],
-    ),
-    _WalkthroughPage(
-      icon: Icons.cloud_done,
-      title: 'Cloud Backup',
-      description: 'Sign in with Google to securely backup your data. Your progress is safe and syncs across devices.',
-      features: ['One-tap Google sign in', 'Automatic cloud sync', 'Restore anytime'],
+      title: 'Progress That Sticks',
+      description: 'Stay consistent with streaks, reminders, progress charts, and backup.',
+      features: ['Streak calendar and mood chart', 'Daily reminders and follow-ups', 'Google backup with daily sync'],
     ),
   ];
 

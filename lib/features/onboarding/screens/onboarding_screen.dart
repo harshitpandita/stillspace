@@ -392,7 +392,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            "You've committed to $_selectedGoalDays days of mindfulness.\nLet's begin your journey to inner peace.",
+            "You've committed to $_selectedGoalDays days of mindfulness.\n"
+            'Stillspace will help with check-ins, sessions, music, journaling, and progress.',
             style: AppTextStyles.body1.copyWith(color: AppColors.textSecondary),
             textAlign: TextAlign.center,
           ),
@@ -421,7 +422,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           _buildGoogleSignInButton(),
           const SizedBox(height: 8),
           Text(
-            'Your progress auto-syncs once per day',
+            'Google backup keeps your progress synced once per day',
             style: AppTextStyles.caption.copyWith(
               color: AppColors.textSecondary,
               fontSize: 11,

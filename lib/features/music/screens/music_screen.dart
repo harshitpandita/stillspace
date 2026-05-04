@@ -147,57 +147,65 @@ class _MusicScreenState extends State<MusicScreen> {
   Widget _buildTrackCard(MusicTrack track) {
     final isCurrent = _music.currentTrack?.id == track.id;
     final isPlaying = isCurrent && _music.isPlaying;
+    final isLocked = _music.hasActiveSession && !isCurrent;
 
     return GestureDetector(
-      onTap: () => _onTrackTap(track),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: isCurrent ? AppColors.primary.withValues(alpha: 0.1) : AppColors.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isCurrent ? AppColors.primary.withValues(alpha: 0.5) : Colors.transparent,
-            width: 1.5,
+      onTap: isLocked ? null : () => _onTrackTap(track),
+      child: Opacity(
+        opacity: isLocked ? 0.45 : 1.0,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: isCurrent ? AppColors.primary.withValues(alpha: 0.1) : AppColors.surface,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isCurrent ? AppColors.primary.withValues(alpha: 0.5) : Colors.transparent,
+              width: 1.5,
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.15),
-                shape: BoxShape.circle,
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(track.icon, color: AppColors.primary, size: 22),
               ),
-              child: Icon(track.icon, color: AppColors.primary, size: 22),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(track.title, style: AppTextStyles.label),
-                  const SizedBox(height: 2),
-                  Text(track.description, style: AppTextStyles.caption.copyWith(fontSize: 11)),
-                ],
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(track.title, style: AppTextStyles.label),
+                    const SizedBox(height: 2),
+                    Text(track.description, style: AppTextStyles.caption.copyWith(fontSize: 11)),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: isCurrent ? AppColors.primary : AppColors.background,
-                shape: BoxShape.circle,
+              const SizedBox(width: 12),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: isCurrent ? AppColors.primary : AppColors.background,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isLocked
+                      ? Icons.lock_outline
+                      : isPlaying
+                          ? Icons.pause
+                          : Icons.play_arrow,
+                  color: isCurrent ? AppColors.background : AppColors.primary,
+                  size: isLocked ? 18 : 22,
+                ),
               ),
-              child: Icon(
-                isPlaying ? Icons.pause : Icons.play_arrow,
-                color: isCurrent ? AppColors.background : AppColors.primary,
-                size: 22,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -375,6 +383,8 @@ class _MusicScreenState extends State<MusicScreen> {
 
   void _onTrackTap(MusicTrack track) {
     final isCurrent = _music.currentTrack?.id == track.id;
+    if (_music.hasActiveSession && !isCurrent) return;
+
     if (isCurrent) {
       _music.isPlaying ? _music.pause() : _music.resume();
     } else {

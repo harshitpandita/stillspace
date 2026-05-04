@@ -9,47 +9,65 @@
           "id": "what-is-meditation",
           "title": "What Is Meditation?",
           "summary": "A simple practice of training attention and awareness.",
-          "readingTimeMinutes": 3,
+          "readingTimeMinutes": 4,
           "body": [
-            { "type": "paragraph", "text": "Meditation is the practice of intentionally directing your attention. That's it. You're not trying to empty your mind, achieve a special state, or stop thinking. You're learning to notice where your attention goes, and to bring it back when it wanders." },
-            { "type": "paragraph", "text": "Most styles of meditation share the same core mechanic: pick something to pay attention to (the breath, a sound, body sensations), notice when your mind drifts, return without judgment. Each return is a rep. The practice is the returning." },
+            { "type": "paragraph", "text": "Meditation is the practice of intentionally working with attention. You choose an anchor, notice what pulls you away, and return. That is the whole loop. You are not trying to delete thoughts, force calm, or become a different kind of person." },
+            { "type": "paragraph", "text": "The mind wanders because it is built to predict, remember, plan, and protect. Meditation does not punish that. It helps you see the wandering earlier, with less drama, so you can decide what deserves your attention next." },
+            { "type": "heading", "text": "The basic loop" },
+            { "type": "bullet", "text": "Choose one anchor: breath, sound, body sensations, or a phrase." },
+            { "type": "bullet", "text": "Rest attention there for as long as you can." },
+            { "type": "bullet", "text": "Notice when attention has moved somewhere else." },
+            { "type": "bullet", "text": "Return gently, without scoring the session as good or bad." },
+            { "type": "paragraph", "text": "Each return is a repetition. A distracted session with twenty honest returns can be more useful than a quiet session where you barely noticed anything. The skill is not perfect stillness. The skill is awareness plus recovery." },
             { "type": "heading", "text": "Why people meditate" },
-            { "type": "bullet", "text": "Calmer reactions to stress" },
-            { "type": "bullet", "text": "Better focus and concentration" },
-            { "type": "bullet", "text": "More awareness of thoughts and feelings without being controlled by them" },
-            { "type": "bullet", "text": "Improved sleep" },
-            { "type": "paragraph", "text": "These benefits are well-documented, but they come from consistency, not intensity. Five minutes a day beats an hour once a week." }
+            { "type": "bullet", "text": "To react less automatically under stress." },
+            { "type": "bullet", "text": "To build focus in a world that constantly fragments attention." },
+            { "type": "bullet", "text": "To understand thoughts and emotions without being pushed around by them." },
+            { "type": "bullet", "text": "To create a small daily reset point." },
+            { "type": "paragraph", "text": "Start small. Five minutes practiced often will teach your nervous system more than one heroic session every few weeks." }
           ]
         },
         {
           "id": "posture-and-setup",
           "title": "Posture and Setup",
           "summary": "How to sit, where to sit, what to do with your hands.",
-          "readingTimeMinutes": 2,
+          "readingTimeMinutes": 4,
           "body": [
+            { "type": "paragraph", "text": "Good posture is not about looking spiritual. It is about creating a body position that is alert enough to stay awake and relaxed enough to maintain. If your posture becomes a performance, it will steal attention from the practice." },
             { "type": "heading", "text": "Posture" },
-            { "type": "paragraph", "text": "Sit upright but relaxed. You can use a chair, a cushion on the floor, or even lie down if you're not sleepy. The key is a posture you can maintain comfortably for the duration." },
-            { "type": "bullet", "text": "Spine tall, not stiff" },
-            { "type": "bullet", "text": "Shoulders relaxed, not slumped" },
-            { "type": "bullet", "text": "Hands resting in your lap or on your knees" },
-            { "type": "bullet", "text": "Eyes closed, or softly open looking down at the floor" },
+            { "type": "bullet", "text": "Sit on a chair with both feet on the floor, or on a cushion with hips slightly higher than knees." },
+            { "type": "bullet", "text": "Let the spine feel tall, but keep the ribs and shoulders soft." },
+            { "type": "bullet", "text": "Rest hands in your lap or on your legs. Pick whatever feels boring and sustainable." },
+            { "type": "bullet", "text": "Keep the jaw unclenched and the tongue relaxed." },
+            { "type": "bullet", "text": "Close your eyes, or keep them softly open with your gaze lowered." },
+            { "type": "paragraph", "text": "If you have pain, adjust. Meditation is not an endurance contest. A small movement made consciously is usually better than sitting through pain and building resentment toward the practice." },
             { "type": "heading", "text": "Setup" },
-            { "type": "paragraph", "text": "Pick a quiet spot. Put your phone on do-not-disturb. Set a timer so you don't keep checking the clock. That's it — you don't need anything else to start." }
+            { "type": "paragraph", "text": "Choose a place where interruption is less likely. Silence is helpful, but not required. Traffic, voices, and household sounds can become part of the practice: notice hearing, then return to the anchor." },
+            { "type": "bullet", "text": "Set a timer before you begin." },
+            { "type": "bullet", "text": "Put the phone on do-not-disturb if you can." },
+            { "type": "bullet", "text": "Use a blanket or hoodie if being cold makes you restless." },
+            { "type": "bullet", "text": "Pick the same place often so your brain learns the cue." },
+            { "type": "paragraph", "text": "The best setup is the one you will repeat. Simple, familiar, and easy beats elaborate every time." }
           ]
         },
         {
           "id": "first-session",
           "title": "Your First Session",
           "summary": "A 5-minute starter walkthrough.",
-          "readingTimeMinutes": 3,
+          "readingTimeMinutes": 4,
           "body": [
-            { "type": "paragraph", "text": "If you've never meditated, start with five minutes. Here's a structure that works for almost anyone:" },
-            { "type": "bullet", "text": "Sit comfortably and set a 5-minute timer." },
-            { "type": "bullet", "text": "Take three slow breaths. Let each exhale be a little longer than the inhale." },
-            { "type": "bullet", "text": "Now breathe normally. Pay attention to the sensation of the breath — at the nostrils, or in the belly. Pick one spot and stay there." },
-            { "type": "bullet", "text": "When your mind wanders (it will, often), notice that it wandered, and gently bring attention back to the breath." },
-            { "type": "bullet", "text": "When the timer goes, take one more deep breath and open your eyes." },
-            { "type": "paragraph", "text": "That's a complete meditation. The wandering and returning IS the practice — not a sign you're doing it wrong." }
+            { "type": "paragraph", "text": "For your first few sessions, aim for clean and short. Five minutes is enough to learn the mechanics without turning meditation into a project. You can always add time later." },
+            { "type": "heading", "text": "A simple 5-minute structure" },
+            { "type": "bullet", "text": "Minute 1: settle the body. Feel where your body touches the chair, cushion, or floor." },
+            { "type": "bullet", "text": "Minute 2: take three slower breaths, then let breathing return to normal." },
+            { "type": "bullet", "text": "Minutes 3 and 4: feel the breath at one spot, such as nostrils, chest, or belly." },
+            { "type": "bullet", "text": "Minute 5: widen awareness to the whole body, then end with one steady breath." },
+            { "type": "paragraph", "text": "Your mind will wander. When you notice it, name it lightly: thinking, planning, remembering, worrying. Then return to the breath. The label should feel like touching a bubble, not slamming a door." },
+            { "type": "heading", "text": "What to expect" },
+            { "type": "bullet", "text": "You may feel calmer, or you may notice how busy your mind is." },
+            { "type": "bullet", "text": "You may get sleepy if your body is tired." },
+            { "type": "bullet", "text": "You may feel impatient. That is normal, and useful to notice." },
+            { "type": "paragraph", "text": "After the session, take ten seconds to ask: what did I notice? This tiny reflection turns the session into learning, not just time spent with your eyes closed." }
           ]
         }
       ]
@@ -63,59 +81,81 @@
           "id": "breath-awareness",
           "title": "Breath Awareness",
           "summary": "The most accessible technique. Anchor attention to the breath.",
-          "readingTimeMinutes": 2,
+          "readingTimeMinutes": 4,
           "body": [
-            { "type": "paragraph", "text": "Breath awareness is the foundation of most meditation traditions. The breath is always with you, it's neutral, and watching it naturally calms the nervous system." },
-            { "type": "heading", "text": "How to do it" },
-            { "type": "bullet", "text": "Pick a spot to feel the breath: nostrils, chest, or belly." },
-            { "type": "bullet", "text": "Breathe naturally. Don't force a rhythm." },
-            { "type": "bullet", "text": "When you notice you've drifted, label it gently ('thinking') and return to the breath." },
-            { "type": "paragraph", "text": "Best for: reducing anxiety, building focus, daily practice." }
+            { "type": "paragraph", "text": "Breath awareness is the most portable meditation technique because the anchor is always available. You do not need to breathe in a special way. The practice is to know that breathing is happening while it happens." },
+            { "type": "paragraph", "text": "Choose the place where the breath is easiest to feel. Some people feel the air at the nostrils. Others feel the chest lifting, the belly expanding, or the whole torso moving. There is no superior spot. Use the one that gives attention something clear to touch." },
+            { "type": "heading", "text": "How to practice" },
+            { "type": "bullet", "text": "Sit comfortably and let the breath move naturally." },
+            { "type": "bullet", "text": "Feel one inhale from beginning to end." },
+            { "type": "bullet", "text": "Feel one exhale from beginning to end." },
+            { "type": "bullet", "text": "When attention drifts, silently note thinking and return to the next breath." },
+            { "type": "paragraph", "text": "If the breath feels too subtle, count exhales from one to ten, then start again. If you lose count, restart at one. Restarting is not failure; it is the training." },
+            { "type": "heading", "text": "Best for" },
+            { "type": "bullet", "text": "Daily focus training." },
+            { "type": "bullet", "text": "Stress reduction before work, study, or sleep." },
+            { "type": "bullet", "text": "Learning how thoughts pull attention." }
           ]
         },
         {
           "id": "body-scan",
           "title": "Body Scan",
           "summary": "Move attention slowly through the body.",
-          "readingTimeMinutes": 2,
+          "readingTimeMinutes": 4,
           "body": [
-            { "type": "paragraph", "text": "A body scan moves your attention systematically from one body part to the next, noticing sensations without trying to change them." },
-            { "type": "heading", "text": "How to do it" },
-            { "type": "bullet", "text": "Lie down or sit comfortably." },
-            { "type": "bullet", "text": "Start at the feet. Notice any sensations — warmth, pressure, tingling, nothing." },
-            { "type": "bullet", "text": "Slowly move up: ankles, calves, knees, thighs, hips, belly, chest, hands, arms, shoulders, neck, face, scalp." },
-            { "type": "bullet", "text": "Spend 30 seconds to a minute on each region." },
-            { "type": "paragraph", "text": "Best for: releasing physical tension, falling asleep, reconnecting with the body after a stressful day." }
+            { "type": "paragraph", "text": "A body scan is a slow tour through physical sensation. It is especially useful when stress lives in the body as tight shoulders, a clenched jaw, a heavy chest, or restless legs." },
+            { "type": "paragraph", "text": "The point is not to relax every muscle on command. The point is to notice what is already there with enough patience that the body stops needing to shout for attention." },
+            { "type": "heading", "text": "How to practice" },
+            { "type": "bullet", "text": "Lie down or sit with enough support that you can stay still comfortably." },
+            { "type": "bullet", "text": "Start at the feet. Notice pressure, temperature, tingling, pulsing, or the absence of sensation." },
+            { "type": "bullet", "text": "Move slowly upward: ankles, calves, knees, thighs, hips, belly, chest, hands, arms, shoulders, neck, face, scalp." },
+            { "type": "bullet", "text": "If you find tension, breathe with it for a few moments instead of trying to force it away." },
+            { "type": "paragraph", "text": "If attention wanders into a story, gently come back to the last body region you remember. Body scans are forgiving; you can restart anywhere." },
+            { "type": "heading", "text": "Best for" },
+            { "type": "bullet", "text": "Evening wind-down and sleep preparation." },
+            { "type": "bullet", "text": "Reconnecting when you feel numb, scattered, or stuck in your head." },
+            { "type": "bullet", "text": "Learning where stress shows up physically." }
           ]
         },
         {
           "id": "loving-kindness",
           "title": "Loving-Kindness (Metta)",
           "summary": "Direct warmth toward yourself and others.",
-          "readingTimeMinutes": 2,
+          "readingTimeMinutes": 4,
           "body": [
-            { "type": "paragraph", "text": "Loving-kindness meditation cultivates a sense of goodwill — toward yourself, then expanding outward. It sounds soft but the research on it is strong, especially for low mood and self-criticism." },
-            { "type": "heading", "text": "How to do it" },
-            { "type": "bullet", "text": "Bring to mind someone easy to feel warmth for — a friend, a pet, a child." },
-            { "type": "bullet", "text": "Silently repeat: 'May you be happy. May you be safe. May you be at ease.'" },
-            { "type": "bullet", "text": "After a few minutes, direct the same wishes to yourself." },
-            { "type": "bullet", "text": "Then to a neutral person, someone difficult, and finally all beings." },
-            { "type": "paragraph", "text": "Best for: low mood, self-criticism, repairing strained relationships." }
+            { "type": "paragraph", "text": "Loving-kindness meditation trains the capacity to offer goodwill. It can feel strange at first, especially if you are used to self-criticism. You do not have to manufacture big feelings. You are practicing the direction of attention." },
+            { "type": "paragraph", "text": "Think of it as rehearsing a kinder internal tone. Over time, that tone becomes easier to access when you are stressed, embarrassed, angry, or disappointed." },
+            { "type": "heading", "text": "How to practice" },
+            { "type": "bullet", "text": "Bring to mind someone easy to care about: a friend, mentor, child, or pet." },
+            { "type": "bullet", "text": "Silently repeat: May you be safe. May you be healthy. May you be at ease." },
+            { "type": "bullet", "text": "Notice the body as you repeat the phrases. Warmth, resistance, numbness, and sadness are all allowed." },
+            { "type": "bullet", "text": "After a few minutes, offer the same phrases to yourself." },
+            { "type": "bullet", "text": "If it feels right, include a neutral person, a difficult person, and then all people." },
+            { "type": "paragraph", "text": "Do not start with the hardest person in your life. Build the muscle with easier targets first. Kindness is not approval. It is the wish that suffering decreases." },
+            { "type": "heading", "text": "Best for" },
+            { "type": "bullet", "text": "Low mood and harsh self-talk." },
+            { "type": "bullet", "text": "Softening resentment without pretending nothing happened." },
+            { "type": "bullet", "text": "Ending a session with emotional steadiness." }
           ]
         },
         {
           "id": "noting",
           "title": "Noting",
           "summary": "Label what arises in awareness.",
-          "readingTimeMinutes": 2,
+          "readingTimeMinutes": 4,
           "body": [
-            { "type": "paragraph", "text": "Noting is a technique where you give a quiet mental label to whatever shows up in your experience — 'thinking', 'planning', 'remembering', 'hearing', 'feeling'. The label creates a small gap between you and the experience." },
-            { "type": "paragraph", "text": "This works well if you find pure breath awareness too still — noting gives the busy mind something useful to do." },
-            { "type": "heading", "text": "How to do it" },
-            { "type": "bullet", "text": "Sit and breathe normally." },
-            { "type": "bullet", "text": "When something dominant arises (a thought, a sound, a feeling), label it with one or two words." },
-            { "type": "bullet", "text": "Then return to the breath until the next thing arises." },
-            { "type": "paragraph", "text": "Best for: people whose minds are very active, anxiety, gaining insight into mental patterns." }
+            { "type": "paragraph", "text": "Noting gives a simple label to whatever becomes obvious in awareness: thinking, planning, hearing, tightness, sadness, warmth, judging. The label creates a little space between the experience and your reaction to it." },
+            { "type": "paragraph", "text": "This technique is helpful when the mind is too active for quiet breath awareness. Instead of fighting the activity, you turn it into material for practice." },
+            { "type": "heading", "text": "How to practice" },
+            { "type": "bullet", "text": "Begin with the breath for a minute." },
+            { "type": "bullet", "text": "When something clearly pulls attention, label it with one plain word." },
+            { "type": "bullet", "text": "Keep the label gentle and brief. Thinking. Hearing. Feeling. Planning." },
+            { "type": "bullet", "text": "Return to the breath or body until the next thing appears." },
+            { "type": "paragraph", "text": "Avoid analyzing the label. If you note planning, you do not need to solve the plan. If you note anxiety, you do not need to explain why it exists. The label is a bookmark, not a debate." },
+            { "type": "heading", "text": "Best for" },
+            { "type": "bullet", "text": "Busy minds that need a more active technique." },
+            { "type": "bullet", "text": "Recognizing recurring thought loops." },
+            { "type": "bullet", "text": "Creating distance from emotion without suppressing it." }
           ]
         }
       ]
@@ -128,43 +168,65 @@
         {
           "id": "stress-reduction",
           "title": "Stress and Anxiety",
-          "summary": "Meditation lowers physiological stress markers.",
-          "readingTimeMinutes": 2,
+          "summary": "Meditation helps the body recover from stress more quickly.",
+          "readingTimeMinutes": 4,
           "body": [
-            { "type": "paragraph", "text": "Regular meditation reduces cortisol levels, slows the heart rate, and dampens the amygdala's reactivity to threat. In plain terms: you become less easily triggered." },
-            { "type": "paragraph", "text": "This isn't about feeling 'zen' all the time. It's about noticing the moment between stimulus and reaction — and being able to choose the reaction instead of being hijacked by it." },
-            { "type": "bullet", "text": "Effective dose: 10–20 minutes a day, most days, for 8 weeks before noticeable change" },
-            { "type": "bullet", "text": "Even 5 minutes acutely lowers stress in that moment" }
+            { "type": "paragraph", "text": "Stress is not only a thought. It is a full-body event: heart rate rises, breathing changes, muscles prepare for action, and attention narrows around possible threats. Meditation helps you notice this process earlier." },
+            { "type": "paragraph", "text": "The practical benefit is not that life becomes less stressful. It is that you recover faster. A stressful email may still spike your body, but you can feel the spike, breathe, and respond with more choice." },
+            { "type": "heading", "text": "What changes with practice" },
+            { "type": "bullet", "text": "You recognize tension before it becomes overwhelm." },
+            { "type": "bullet", "text": "You pause before reacting." },
+            { "type": "bullet", "text": "You learn which thoughts are useful signals and which are repetitive noise." },
+            { "type": "bullet", "text": "Your body gets more familiar with downshifting." },
+            { "type": "paragraph", "text": "Try this during a stressful moment: feel both feet, take one slower exhale, and name the strongest sensation in the body. This interrupts the spiral without requiring you to pretend everything is fine." }
           ]
         },
         {
           "id": "focus-and-attention",
           "title": "Focus and Attention",
           "summary": "Practice strengthens the mental muscle of returning to task.",
-          "readingTimeMinutes": 2,
+          "readingTimeMinutes": 4,
           "body": [
-            { "type": "paragraph", "text": "Every time you notice you've drifted in meditation and return to the breath, you're literally training the part of the brain (anterior cingulate cortex) that catches mind-wandering. Over time, this skill carries over to other tasks." },
-            { "type": "paragraph", "text": "People who meditate consistently report being able to stay on task longer, get back to work faster after a distraction, and feel less mental fatigue." }
+            { "type": "paragraph", "text": "Focus is not the ability to never get distracted. Focus is the ability to notice distraction and come back. Meditation trains exactly that movement in a low-stakes environment." },
+            { "type": "paragraph", "text": "When you sit and return to the breath, you are practicing the same mental action needed to return to studying, writing, coding, cleaning, or listening to someone you care about." },
+            { "type": "heading", "text": "How it transfers" },
+            { "type": "bullet", "text": "You catch mind-wandering sooner." },
+            { "type": "bullet", "text": "You become less fused with every notification, urge, or random thought." },
+            { "type": "bullet", "text": "You spend less energy criticizing yourself for drifting." },
+            { "type": "bullet", "text": "You restart tasks with less friction." },
+            { "type": "paragraph", "text": "For focus, use short sessions before deep work. Two to five minutes of breath awareness can act like a mental doorway: you are telling the brain what mode comes next." }
           ]
         },
         {
           "id": "emotional-regulation",
           "title": "Emotional Regulation",
           "summary": "More space between feeling and acting on the feeling.",
-          "readingTimeMinutes": 2,
+          "readingTimeMinutes": 4,
           "body": [
-            { "type": "paragraph", "text": "One of the most underrated benefits: you stop feeling like your emotions are commands. Anger arises, you notice it, you let it pass without sending the email. Sadness arises, you sit with it instead of numbing." },
-            { "type": "paragraph", "text": "This is what people mean by 'mindfulness' — not the absence of difficult emotions, but a different relationship to them." }
+            { "type": "paragraph", "text": "Emotional regulation does not mean staying calm all the time. It means emotions can move through you without instantly becoming actions you regret." },
+            { "type": "paragraph", "text": "Meditation helps because it changes your relationship to inner events. Anger can be known as anger. Sadness can be felt as heaviness, pressure, or tears. Anxiety can be noticed as tightness and future-thinking. Once an emotion is known clearly, it has less need to drive the whole vehicle." },
+            { "type": "heading", "text": "A useful practice" },
+            { "type": "bullet", "text": "Name the emotion: anger, fear, grief, shame, joy." },
+            { "type": "bullet", "text": "Find where it appears in the body." },
+            { "type": "bullet", "text": "Let the sensation be there for three breaths." },
+            { "type": "bullet", "text": "Ask: what would help, and what would make this worse?" },
+            { "type": "paragraph", "text": "This creates a gap. In that gap, you can choose to speak, wait, journal, move, apologize, rest, or ask for support." }
           ]
         },
         {
           "id": "sleep",
           "title": "Sleep",
           "summary": "Easier to fall asleep, less middle-of-the-night rumination.",
-          "readingTimeMinutes": 1,
+          "readingTimeMinutes": 3,
           "body": [
-            { "type": "paragraph", "text": "Meditation before bed (especially body scan or breath awareness) reduces sleep latency — the time it takes to fall asleep — and tends to reduce 3am rumination wake-ups." },
-            { "type": "paragraph", "text": "The mechanism is simple: you're practicing letting thoughts go without engaging them. That same skill is what lets you fall asleep instead of replaying tomorrow's meeting." }
+            { "type": "paragraph", "text": "Sleep problems often get worse when the mind treats bedtime as planning time. Meditation helps by practicing the skill of noticing thoughts without following every branch." },
+            { "type": "paragraph", "text": "A body scan or gentle breath practice before bed gives attention something simple to do while the nervous system powers down. You are not trying to knock yourself out. You are making less noise inside." },
+            { "type": "heading", "text": "Try this at night" },
+            { "type": "bullet", "text": "Lower the lights and choose a 5 to 10 minute body scan." },
+            { "type": "bullet", "text": "Let the exhale be slightly longer than the inhale." },
+            { "type": "bullet", "text": "When tomorrow's plans appear, note planning and return to body sensation." },
+            { "type": "bullet", "text": "If you wake at night, repeat the same technique without checking the clock if possible." },
+            { "type": "paragraph", "text": "The goal is not to win sleep. The goal is to stop arguing with wakefulness. That softer relationship often lets sleep arrive on its own." }
           ]
         }
       ]
