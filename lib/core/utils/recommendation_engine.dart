@@ -27,10 +27,14 @@ class RecommendationEngine {
     required int currentStreak,
     required int daysLeftToGoal,
     required bool missedYesterday,
+    DateTime? now,
   }) {
-    final hour = DateTime.now().hour;
+    final currentTime = now ?? DateTime.now();
+    final hour = currentTime.hour;
+    final isBeforeNoon = hour >= 5 && hour < 12;
     final isMorning = hour >= 5 && hour < 10;
     final isEvening = hour >= 20 || hour < 5;
+    final isLateEvening = hour >= 20;
 
     // Priority 1: Close to goal completion
     if (daysLeftToGoal <= 3 && daysLeftToGoal > 0) {
@@ -54,14 +58,14 @@ class RecommendationEngine {
       );
     }
 
-    // Priority 3a: Low mood + morning - Wim Hof breathing to shake off stress and energize
-    if (moodScore != null && moodScore <= 2 && isMorning) {
+    // Priority 3a: Lower mood + energizing window - Wim Hof breathing to shift state
+    if (moodScore != null && moodScore <= 3 && (isBeforeNoon || isLateEvening)) {
       return Recommendation(
         sessionDuration: 10,
         sessionType: SessionType.wimHof,
-        promptMessage: 'Feeling heavy this morning? Wim Hof breathing can shift your state in 10 minutes.',
+        promptMessage: 'Feeling heavy? Wim Hof breathing can shift your state in 10 minutes.',
         journalPrompt: AppConstants.lowMoodJournalPrompts[
-            DateTime.now().millisecond % AppConstants.lowMoodJournalPrompts.length],
+            currentTime.millisecond % AppConstants.lowMoodJournalPrompts.length],
         urgency: Urgency.medium,
       );
     }
@@ -73,7 +77,7 @@ class RecommendationEngine {
         sessionType: SessionType.calming,
         promptMessage: 'Be gentle with yourself. Even 5 minutes can help.',
         journalPrompt: AppConstants.lowMoodJournalPrompts[
-            DateTime.now().millisecond % AppConstants.lowMoodJournalPrompts.length],
+            currentTime.millisecond % AppConstants.lowMoodJournalPrompts.length],
         urgency: Urgency.medium,
       );
     }

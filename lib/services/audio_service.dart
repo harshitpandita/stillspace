@@ -19,7 +19,6 @@ class AudioService {
 
   final SharedAudioPlayer _sharedAudio = SharedAudioPlayer();
   late final AudioPlayer _player = _sharedAudio.player;
-  StreamSubscription<PlayerState>? _startBellSub;
   MeditationSound _currentSound = MeditationSound.none;
   double _volume = 0.5;
 
@@ -73,39 +72,31 @@ class AudioService {
   }) async {
     _volume = volume.clamp(0.0, 1.0);
     await MusicService().releaseForMeditationPlayback();
-    await _cancelStartBellListener();
 
     final token = _sharedAudio.claimPlayback();
     _currentSound = sound;
 
     try {
-      await _loadAndPlay(
+      await _loadSource(
         _source(
           assetPath: _bellAsset,
           id: 'meditation-bell-start',
           title: 'Session Bell',
           artist: 'Stillspace Meditation',
         ),
-        label: 'start bell',
         loopMode: LoopMode.off,
         volume: 0.8,
       );
+      final bellCompleted = await _playToCompletion(_player, 'start bell');
 
-      if (sound != MeditationSound.none) {
-        _startBellSub = _player.playerStateStream.listen((state) {
-          if (!_sharedAudio.ownsPlayback(token)) {
-            unawaited(_cancelStartBellListener());
-            return;
-          }
-          if (state.processingState == ProcessingState.completed) {
-            unawaited(_cancelStartBellListener());
-            unawaited(_playAmbientForSession(sound, token));
-          }
-        });
+      if (bellCompleted &&
+          sound != MeditationSound.none &&
+          _sharedAudio.ownsPlayback(token)) {
+        await _playAmbientForSession(sound, token);
       }
     } catch (e) {
       debugPrint('AudioService: Error starting session audio - $e');
-      if (sound != MeditationSound.none) {
+      if (sound != MeditationSound.none && _sharedAudio.ownsPlayback(token)) {
         unawaited(_playAmbientForSession(sound, token));
       }
     }
@@ -113,7 +104,6 @@ class AudioService {
 
   Future<void> playBell() async {
     await MusicService().releaseForMeditationPlayback();
-    await _cancelStartBellListener();
     _sharedAudio.claimPlayback();
 
     try {
@@ -149,7 +139,6 @@ class AudioService {
     if (assetPath == null) return;
 
     await MusicService().releaseForMeditationPlayback();
-    await _cancelStartBellListener();
     final token = _sharedAudio.claimPlayback();
     await _playAmbientForSession(sound, token);
   }
@@ -196,7 +185,6 @@ class AudioService {
   }
 
   Future<void> stop() async {
-    await _cancelStartBellListener();
     _sharedAudio.claimPlayback();
     await _player.stop();
     _currentSound = MeditationSound.none;
@@ -210,7 +198,6 @@ class AudioService {
   // future only resolves when playback ENDS, so we deliberately do not await it.
   Future<void> playGuided(String assetPath) async {
     await MusicService().releaseForMeditationPlayback();
-    await _cancelStartBellListener();
     _sharedAudio.claimPlayback();
     _currentSound = MeditationSound.none;
 
@@ -264,9 +251,8 @@ class AudioService {
     );
   }
 
-  Future<void> _loadAndPlay(
+  Future<void> _loadSource(
     AudioSource source, {
-    required String label,
     required LoopMode loopMode,
     required double volume,
   }) async {
@@ -274,8 +260,28 @@ class AudioService {
     await _player.setLoopMode(loopMode);
     await _player.setVolume(volume);
     await _player.seek(Duration.zero);
+  }
+
+  Future<void> _loadAndPlay(
+    AudioSource source, {
+    required String label,
+    required LoopMode loopMode,
+    required double volume,
+  }) async {
+    await _loadSource(source, loopMode: loopMode, volume: volume);
     debugPrint('AudioService: Playing $label');
     unawaited(_playWithoutBlocking(_player, label));
+  }
+
+  Future<bool> _playToCompletion(AudioPlayer player, String label) async {
+    try {
+      debugPrint('AudioService: Playing $label');
+      await player.play();
+      return true;
+    } catch (e) {
+      debugPrint('AudioService: Error during $label playback - $e');
+      return false;
+    }
   }
 
   Future<void> _playWithoutBlocking(AudioPlayer player, String label) {
@@ -284,12 +290,5 @@ class AudioService {
     });
   }
 
-  Future<void> _cancelStartBellListener() async {
-    await _startBellSub?.cancel();
-    _startBellSub = null;
-  }
-
-  void dispose() {
-    _startBellSub?.cancel();
-  }
+  void dispose() {}
 }
