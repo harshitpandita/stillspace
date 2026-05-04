@@ -40,7 +40,19 @@ Stillspace is a dark-themed Flutter mental wellness app for building a consisten
 - Firestore sync on changes and once per day on app open
 - Local data remains usable without internet
 
+## Screenshots
+
+<!-- Add screenshots here -->
+
+![Home Screen](screenshots/home.jpg)
+![Meditation Session](screenshots/meditation.jpg)
+![Music Player](screenshots/music.jpg)
+![Journal Entry](screenshots/journal.jpg)
+![Mood Check-In](screenshots/mood.jpg)
+![Profile with Charts](screenshots/profile.jpg)
+
 ## Tech Stack
+
 
 - Flutter
 - Provider
