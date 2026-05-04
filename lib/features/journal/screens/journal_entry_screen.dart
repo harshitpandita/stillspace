@@ -1,12 +1,15 @@
-// Journal entry screen - create new journal entry with optional prompt
+// Journal entry screen - create new journal entry with optional prompt and local images
+import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../providers/journal_provider.dart';
 import '../../../providers/streak_provider.dart';
+import '../../../services/journal_image_service.dart';
 import '../../../services/notification_service.dart';
 import '../../../widgets/primary_action_button.dart';
 
@@ -20,14 +23,17 @@ class JournalEntryScreen extends StatefulWidget {
 class _JournalEntryScreenState extends State<JournalEntryScreen> {
   final TextEditingController _contentController = TextEditingController();
   late String _suggestedPrompt;
+  late String _draftEntryId;
   bool _usePrompt = true;
   int? _selectedMood;
   bool _isSaving = false;
+  final List<String> _imagePaths = [];
 
   @override
   void initState() {
     super.initState();
     _suggestedPrompt = _getRandomPrompt();
+    _draftEntryId = DateTime.now().millisecondsSinceEpoch.toString();
   }
 
   @override
@@ -134,6 +140,8 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                           );
                         }),
                       ),
+                      const SizedBox(height: 24),
+                      _buildImageSection(),
                       const Spacer(),
                       const SizedBox(height: 24),
                       PrimaryActionButton(
@@ -230,6 +238,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
         prompt: _usePrompt ? _suggestedPrompt : 'Free write',
         content: _contentController.text.trim(),
         moodScore: _selectedMood,
+        imagePaths: List.unmodifiable(_imagePaths),
       );
 
       await streakProvider.incrementStreak();
@@ -243,5 +252,203 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
     if (mounted) {
       Navigator.of(context).pop();
     }
+  }
+
+  Widget _buildImageSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text('Photos', style: AppTextStyles.label),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                'Local only',
+                style: AppTextStyles.caption.copyWith(fontSize: 10),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          "Images are saved locally and won't sync across devices.",
+          style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 84,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              _buildAddImageButton(),
+              ..._imagePaths.map((path) => Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: _buildImageThumbnail(path),
+                  )),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAddImageButton() {
+    return GestureDetector(
+      onTap: _showImageSourceSheet,
+      child: Container(
+        width: 84,
+        height: 84,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.3), width: 1.5),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.add_photo_alternate_outlined, color: AppColors.primary, size: 28),
+            const SizedBox(height: 4),
+            Text(
+              'Add',
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w600,
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImageThumbnail(String path) {
+    return Stack(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Image.file(
+            File(path),
+            width: 84,
+            height: 84,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stack) => Container(
+              width: 84,
+              height: 84,
+              color: AppColors.surface,
+              child: const Icon(Icons.broken_image, color: AppColors.textSecondary),
+            ),
+          ),
+        ),
+        Positioned(
+          top: 4,
+          right: 4,
+          child: GestureDetector(
+            onTap: () => _removeImage(path),
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.7),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.close, color: Colors.white, size: 14),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showImageSourceSheet() {
+    FocusScope.of(context).unfocus();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildSourceTile(
+                  icon: Icons.photo_library_outlined,
+                  label: 'Choose from gallery',
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    _pickImage(ImageSource.gallery);
+                  },
+                ),
+                const SizedBox(height: 8),
+                _buildSourceTile(
+                  icon: Icons.camera_alt_outlined,
+                  label: 'Take a photo',
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    _pickImage(ImageSource.camera);
+                  },
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSourceTile({required IconData icon, required String label, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: AppColors.primary, size: 22),
+            const SizedBox(width: 14),
+            Text(label, style: AppTextStyles.body1),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final path = await JournalImageService().pickAndSave(
+        source: source,
+        entryId: _draftEntryId,
+      );
+      if (path == null || !mounted) return;
+      setState(() => _imagePaths.add(path));
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not load image. Please try again.'),
+            backgroundColor: AppColors.surface,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _removeImage(String path) async {
+    setState(() => _imagePaths.remove(path));
+    await JournalImageService().deleteImage(path);
   }
 }

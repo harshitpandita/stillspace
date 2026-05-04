@@ -1,4 +1,5 @@
 // Journal screen - list of journal entries with FAB to add new entry
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
@@ -315,10 +316,45 @@ class _JournalEntryCard extends StatelessWidget {
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),
+            if (entry.imagePaths.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 64,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: entry.imagePaths.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 8),
+                  itemBuilder: (context, index) => ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.file(
+                      File(entry.imagePaths[index]),
+                      width: 64,
+                      height: 64,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stack) => Container(
+                        width: 64,
+                        height: 64,
+                        color: AppColors.background,
+                        child: const Icon(Icons.broken_image, color: AppColors.textSecondary, size: 20),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
+                if (entry.imagePaths.isNotEmpty) ...[
+                  const Icon(Icons.photo_library_outlined, size: 14, color: AppColors.textSecondary),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${entry.imagePaths.length}',
+                    style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                  ),
+                  const SizedBox(width: 12),
+                ],
                 Text(
                   'Tap to read more',
                   style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
@@ -419,6 +455,34 @@ class _JournalDetailScreen extends StatelessWidget {
               entry.content,
               style: AppTextStyles.body1.copyWith(height: 1.8),
             ),
+            if (entry.imagePaths.isNotEmpty) ...[
+              const SizedBox(height: 24),
+              ...entry.imagePaths.map((path) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.file(
+                    File(path),
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stack) => Container(
+                      height: 180,
+                      color: AppColors.surface,
+                      child: const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.broken_image, color: AppColors.textSecondary, size: 32),
+                            SizedBox(height: 8),
+                            Text('Image not available', style: AppTextStyles.caption),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              )),
+            ],
             const SizedBox(height: 32),
             Center(
               child: Text(

@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../providers/mood_provider.dart';
 import '../../../providers/streak_provider.dart';
 import '../../../providers/user_provider.dart';
+import '../../../services/background_sync_service.dart';
 import '../../../services/notification_service.dart';
 import '../../mood/screens/mood_checkin_screen.dart';
 import 'home_screen.dart';
@@ -34,6 +35,8 @@ class _MainScreenState extends State<MainScreen> {
       context.read<StreakProvider>().checkAndUpdateStreak();
       _scheduleNotifications();
       _maybePromptMoodCheckIn();
+      // Fallback for missed midnight sync — fires once per calendar day
+      BackgroundSyncService().syncIfNeeded();
     });
   }
 

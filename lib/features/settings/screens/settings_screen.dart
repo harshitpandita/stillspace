@@ -801,6 +801,22 @@ class _AccountTileState extends State<_AccountTile> {
                   ),
                 ],
               ),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Divider(color: AppColors.background, height: 1),
+              ),
+              Row(
+                children: [
+                  const Icon(Icons.schedule, color: AppColors.textSecondary, size: 14),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Auto-syncs once per day on app open + after every change',
+                      style: AppTextStyles.caption.copyWith(fontSize: 11),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),

@@ -193,6 +193,8 @@ class FirebaseService {
 
     for (final entry in entries) {
       final entryMap = Map<String, dynamic>.from(entry);
+      // Image paths point to device-local files and must never leave the device
+      entryMap.remove('imagePaths');
       final docRef = collectionRef.doc(entryMap['id']);
       batch.set(docRef, entryMap);
     }
@@ -211,9 +213,34 @@ class FirebaseService {
 
     if (snapshot.docs.isEmpty) return;
 
-    final entries = snapshot.docs.map((doc) => doc.data()).toList();
     final box = Hive.box(AppConstants.hiveBoxJournalEntries);
-    await box.put('entries', entries);
+    final localEntries = box.get('entries', defaultValue: <dynamic>[]) as List<dynamic>;
+    final localById = <String, Map<String, dynamic>>{};
+    for (final e in localEntries) {
+      final map = Map<String, dynamic>.from(e as Map);
+      localById[map['id'] as String] = map;
+    }
+
+    // Merge: cloud is the source of truth for content, but imagePaths exist
+    // only on the local device and must be preserved on existing entries
+    final merged = <Map<String, dynamic>>[];
+    final cloudIds = <String>{};
+    for (final doc in snapshot.docs) {
+      final cloud = Map<String, dynamic>.from(doc.data());
+      cloudIds.add(cloud['id'] as String);
+      final local = localById[cloud['id']];
+      if (local != null && local['imagePaths'] != null) {
+        cloud['imagePaths'] = local['imagePaths'];
+      }
+      merged.add(cloud);
+    }
+    // Keep local-only entries (e.g. created offline, not yet synced up)
+    for (final e in localEntries) {
+      final map = Map<String, dynamic>.from(e as Map);
+      if (!cloudIds.contains(map['id'])) merged.add(map);
+    }
+
+    await box.put('entries', merged);
   }
 
   void syncOnChange() {

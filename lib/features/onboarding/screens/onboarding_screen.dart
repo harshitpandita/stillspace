@@ -419,6 +419,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
           // Primary: Google Sign-In
           _buildGoogleSignInButton(),
+          const SizedBox(height: 8),
+          Text(
+            'Your progress auto-syncs once per day',
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.textSecondary,
+              fontSize: 11,
+            ),
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 12),
 
           // Secondary: Skip sign-in and continue

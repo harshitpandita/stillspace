@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../core/constants/app_constants.dart';
 import '../features/journal/models/journal_entry.dart';
 import '../services/firebase_service.dart';
+import '../services/journal_image_service.dart';
 
 class JournalProvider extends ChangeNotifier {
   List<JournalEntry> _entries = [];
@@ -38,6 +39,7 @@ class JournalProvider extends ChangeNotifier {
     required String prompt,
     required String content,
     int? moodScore,
+    List<String> imagePaths = const [],
   }) async {
     final entry = JournalEntry(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -45,6 +47,7 @@ class JournalProvider extends ChangeNotifier {
       content: content,
       moodScore: moodScore,
       timestamp: DateTime.now(),
+      imagePaths: imagePaths,
     );
     _entries.add(entry);
     await _saveToHive();
@@ -53,6 +56,14 @@ class JournalProvider extends ChangeNotifier {
   }
 
   Future<void> deleteEntry(String id) async {
+    final entry = _entries.firstWhere(
+      (e) => e.id == id,
+      orElse: () => JournalEntry(id: '', prompt: '', content: '', timestamp: DateTime.now()),
+    );
+    // Clean up local image files before removing the entry
+    for (final path in entry.imagePaths) {
+      await JournalImageService().deleteImage(path);
+    }
     _entries.removeWhere((e) => e.id == id);
     await _saveToHive();
     notifyListeners();
