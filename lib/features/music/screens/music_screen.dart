@@ -63,10 +63,12 @@ class _MusicScreenState extends State<MusicScreen> {
                 _buildNowPlayingCard(),
                 const SizedBox(height: 24),
               ],
-              const Text('Session Length', style: AppTextStyles.headline3),
-              const SizedBox(height: 12),
-              _buildDurationSelector(),
-              const SizedBox(height: 32),
+              if (!_music.hasActiveSession) ...[
+                const Text('Session Length', style: AppTextStyles.headline3),
+                const SizedBox(height: 12),
+                _buildDurationSelector(),
+                const SizedBox(height: 32),
+              ],
               ...MusicTracks.categories.map(_buildCategorySection),
               const SizedBox(height: 24),
               Container(

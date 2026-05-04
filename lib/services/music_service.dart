@@ -33,8 +33,9 @@ class MusicService extends ChangeNotifier {
 
   MusicTrack? _currentTrack;
   Duration? _sessionDuration; // null = until manually stopped
+  Duration? _remainingWhenPaused;
   Timer? _autoStopTimer;
-  DateTime? _sessionStartedAt;
+  DateTime? _playStartedAt;
   double _volume = 0.7;
 
   MusicTrack? get currentTrack => _currentTrack;
@@ -45,32 +46,37 @@ class MusicService extends ChangeNotifier {
   bool get hasActiveSession => _currentTrack != null;
 
   Duration? get sessionRemaining {
-    if (_sessionDuration == null || _sessionStartedAt == null) return null;
-    final elapsed = DateTime.now().difference(_sessionStartedAt!);
-    final remaining = _sessionDuration! - elapsed;
+    if (_currentTrack == null || _sessionDuration == null) return null;
+    final remaining = _currentRemaining;
     return remaining.isNegative ? Duration.zero : remaining;
   }
 
   // Progress through the session (0.0 - 1.0). Null when there's no fixed duration.
   double? get sessionProgress {
-    if (_sessionDuration == null || _sessionStartedAt == null) return null;
-    final elapsed = DateTime.now().difference(_sessionStartedAt!).inMilliseconds;
-    final total = _sessionDuration!.inMilliseconds;
+    final totalDuration = _sessionDuration;
+    if (_currentTrack == null || totalDuration == null) return null;
+    final total = totalDuration.inMilliseconds;
     if (total == 0) return 0;
+    final elapsed = total - _currentRemaining.inMilliseconds;
     return (elapsed / total).clamp(0.0, 1.0);
+  }
+
+  Duration get _currentRemaining {
+    final remaining = _remainingWhenPaused ?? Duration.zero;
+    final startedAt = _playStartedAt;
+    if (!_player.playing || startedAt == null) return remaining;
+    return remaining - DateTime.now().difference(startedAt);
   }
 
   Future<void> play(MusicTrack track, {Duration? duration}) async {
     try {
       _currentTrack = track;
       _sessionDuration = duration;
-      _sessionStartedAt = DateTime.now();
+      _remainingWhenPaused = duration;
+      _playStartedAt = null;
       _sharedAudio.claimPlayback();
-
       _autoStopTimer?.cancel();
-      if (duration != null) {
-        _autoStopTimer = Timer(duration, () => stop());
-      }
+      _autoStopTimer = null;
 
       // AudioSource with MediaItem tag — drives the system notification + lock-screen controls
       final source = AudioSource.asset(
@@ -87,9 +93,17 @@ class MusicService extends ChangeNotifier {
       await _player.setLoopMode(LoopMode.one);
       await _player.setVolume(_volume);
       await _player.seek(Duration.zero);
+      _playStartedAt = DateTime.now();
+      _startAutoStopTimer(duration);
       unawaited(_player.play());
       notifyListeners();
     } catch (e) {
+      _autoStopTimer?.cancel();
+      _autoStopTimer = null;
+      _sessionDuration = null;
+      _remainingWhenPaused = null;
+      _playStartedAt = null;
+      _currentTrack = null;
       debugPrint('MusicService: failed to play ${track.id} - $e');
     }
   }
@@ -98,18 +112,25 @@ class MusicService extends ChangeNotifier {
     _autoStopTimer?.cancel();
     _autoStopTimer = null;
     _sessionDuration = null;
-    _sessionStartedAt = null;
+    _remainingWhenPaused = null;
+    _playStartedAt = null;
     _currentTrack = null;
     notifyListeners();
     return Future.value();
   }
 
   Future<void> pause() async {
+    _remainingWhenPaused = sessionRemaining;
+    _playStartedAt = null;
+    _autoStopTimer?.cancel();
+    _autoStopTimer = null;
     await _player.pause();
     notifyListeners();
   }
 
   Future<void> resume() async {
+    _playStartedAt = DateTime.now();
+    _startAutoStopTimer(_remainingWhenPaused);
     unawaited(_player.play());
     notifyListeners();
   }
@@ -118,7 +139,8 @@ class MusicService extends ChangeNotifier {
     _autoStopTimer?.cancel();
     _autoStopTimer = null;
     _sessionDuration = null;
-    _sessionStartedAt = null;
+    _remainingWhenPaused = null;
+    _playStartedAt = null;
     _currentTrack = null;
     _sharedAudio.claimPlayback();
     await _player.stop();
@@ -129,6 +151,13 @@ class MusicService extends ChangeNotifier {
     _volume = v.clamp(0.0, 1.0);
     await _player.setVolume(_volume);
     notifyListeners();
+  }
+
+  void _startAutoStopTimer(Duration? remaining) {
+    _autoStopTimer?.cancel();
+    _autoStopTimer = null;
+    if (remaining == null || remaining <= Duration.zero) return;
+    _autoStopTimer = Timer(remaining, () => stop());
   }
 
   @override
