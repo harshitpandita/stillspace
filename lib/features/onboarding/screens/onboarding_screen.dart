@@ -425,7 +425,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           const SizedBox(height: 16),
           Text(
             "You've committed to $_selectedGoalDays days of mindfulness.\n"
-            'Stillspace will help with check-ins, sessions, music, journaling, and progress.',
+            'Stillspace will help with check-ins, AI reflection, sessions, music, journaling, and progress.',
             style: AppTextStyles.body1.copyWith(color: AppColors.textSecondary),
             textAlign: TextAlign.center,
           ),

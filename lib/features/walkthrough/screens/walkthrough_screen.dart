@@ -31,6 +31,17 @@ class _WalkthroughScreenState extends State<WalkthroughScreen> {
       ],
     ),
     _WalkthroughPage(
+      icon: Icons.auto_awesome,
+      title: 'AI Reflection Chat',
+      description:
+          'Talk through what is on your mind with Stillspace AI, then get support that follows the conversation.',
+      features: [
+        'Context-aware chat replies',
+        'Mood detection from reflection',
+        'Session suggestions from chat',
+      ],
+    ),
+    _WalkthroughPage(
       icon: Icons.self_improvement,
       title: 'Meditate and Breathe',
       description:
@@ -56,22 +67,22 @@ class _WalkthroughScreenState extends State<WalkthroughScreen> {
       icon: Icons.edit_note,
       title: 'Journal and Learn',
       description:
-          'Reflect, attach local images, and build a practical understanding of meditation.',
+          'Reflect privately, attach local images, and build a practical understanding of meditation.',
       features: [
         'Guided prompts and mood tags',
+        'Stillspace AI from Journal',
         'Private local journal images',
-        'Offline Learn articles',
       ],
     ),
     _WalkthroughPage(
       icon: Icons.insights,
       title: 'Progress That Sticks',
       description:
-          'Stay consistent with streaks, reminders, progress charts, and backup.',
+          'Stay consistent with smarter recommendations, streaks, reminders, progress charts, and backup.',
       features: [
         'Streak calendar and mood chart',
+        'Recommendations adapt to mood',
         'Daily reminders and follow-ups',
-        'Google backup with daily sync',
       ],
     ),
   ];
