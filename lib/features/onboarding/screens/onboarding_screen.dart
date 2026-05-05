@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../providers/journal_provider.dart';
+import '../../../providers/mood_provider.dart';
+import '../../../providers/streak_provider.dart';
 import '../../../providers/user_provider.dart';
 import '../../../services/notification_service.dart';
 import '../../../services/firebase_service.dart';
@@ -387,13 +390,37 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Future<void> _signInWithGoogle() async {
     setState(() => _isSigningIn = true);
+    final userProvider = context.read<UserProvider>();
+    final moodProvider = context.read<MoodProvider>();
+    final streakProvider = context.read<StreakProvider>();
+    final journalProvider = context.read<JournalProvider>();
+
     try {
-      await FirebaseService().signInWithGoogle();
+      final user = await FirebaseService().signInWithGoogle();
+      if (user != null) {
+        await FirebaseService().syncAllDataFromCloud();
+        await Future.wait([
+          userProvider.init(),
+          moodProvider.init(),
+          streakProvider.init(),
+          journalProvider.init(),
+        ]);
+
+        if (!mounted) return;
+
+        if (userProvider.isOnboardingComplete) {
+          await FirebaseService().syncAllDataToCloud();
+          if (mounted) setState(() => _isSigningIn = false);
+          return;
+        }
+      }
     } catch (e) {
       // Sign-in failed silently — user can still continue
     }
-    if (mounted) setState(() => _isSigningIn = false);
+    if (!mounted) return;
+    setState(() => _isSigningIn = false);
     await _completeOnboarding();
+    await FirebaseService().syncAllDataToCloud();
   }
 
   Widget _buildWelcomeStep() {

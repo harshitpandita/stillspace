@@ -1020,9 +1020,11 @@ class _AccountTileState extends State<_AccountTile> {
     setState(() => _isSyncing = true);
 
     try {
+      await FirebaseService().syncAllDataFromCloud();
       await FirebaseService().syncAllDataToCloud();
 
       if (mounted) {
+        _refreshProviders();
         setState(() {
           _isSyncing = false;
           _lastSyncTime = DateTime.now();

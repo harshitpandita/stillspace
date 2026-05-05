@@ -76,7 +76,9 @@ class FirebaseService {
       'goalDays': box.get('goalDays'),
       'notificationTime': box.get('notificationTime'),
       'notificationsEnabled': box.get('notificationsEnabled'),
+      'quietModeEnabled': box.get('quietModeEnabled'),
       'isOnboardingComplete': box.get('isOnboardingComplete'),
+      'hasSeenWalkthrough': box.get('hasSeenWalkthrough'),
       'lastSyncedAt': FieldValue.serverTimestamp(),
     };
 
@@ -94,7 +96,9 @@ class FirebaseService {
     if (data['goalDays'] != null) await box.put('goalDays', data['goalDays']);
     if (data['notificationTime'] != null) await box.put('notificationTime', data['notificationTime']);
     if (data['notificationsEnabled'] != null) await box.put('notificationsEnabled', data['notificationsEnabled']);
+    if (data['quietModeEnabled'] != null) await box.put('quietModeEnabled', data['quietModeEnabled']);
     if (data['isOnboardingComplete'] != null) await box.put('isOnboardingComplete', data['isOnboardingComplete']);
+    if (data['hasSeenWalkthrough'] != null) await box.put('hasSeenWalkthrough', data['hasSeenWalkthrough']);
   }
 
   Future<void> _syncStreakData(String uid) async {
