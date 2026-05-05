@@ -43,6 +43,47 @@ void main() {
       expect(capturedRequest.headers['Authorization'], equals('Bearer test-token'));
     });
 
+    test('includes same-chat history in the request body', () async {
+      late http.Request capturedRequest;
+      final service = AiChatService(
+        token: 'test-token',
+        client: MockClient((request) async {
+          capturedRequest = request;
+          return http.Response(
+            jsonEncode({
+              'choices': [
+                {
+                  'message': {'content': 'I remember what you said.'},
+                },
+              ],
+            }),
+            200,
+          );
+        }),
+      );
+
+      await service.sendMessage(
+        'What about that last thing?',
+        history: const [
+          AiChatContextMessage(role: 'user', content: 'I had a rough day.'),
+          AiChatContextMessage(
+            role: 'assistant',
+            content: 'What part of it felt heaviest?',
+          ),
+        ],
+      );
+
+      final body =
+          jsonDecode(capturedRequest.body) as Map<String, dynamic>;
+      final messages = body['messages'] as List<dynamic>;
+
+      expect(messages[1]['role'], equals('user'));
+      expect(messages[1]['content'], equals('I had a rough day.'));
+      expect(messages[2]['role'], equals('assistant'));
+      expect(messages[2]['content'], contains('heaviest'));
+      expect(messages.last['content'], equals('What about that last thing?'));
+    });
+
     test('falls through unavailable model and uses next response', () async {
       var attempts = 0;
       final service = AiChatService(
@@ -124,6 +165,56 @@ void main() {
         response,
         equals('You made it through today.\nWhat feels heaviest right now?'),
       );
+    });
+
+    test('infers mood from structured json response', () async {
+      final service = AiChatService(
+        token: 'test-token',
+        client: MockClient((_) async {
+          return http.Response(
+            jsonEncode({
+              'choices': [
+                {
+                  'message': {'content': '{"score": 2}'},
+                },
+              ],
+            }),
+            200,
+          );
+        }),
+      );
+
+      final mood = await service.inferMood([
+        'I have been really overwhelmed lately.',
+      ]);
+
+      expect(mood, isNotNull);
+      expect(mood!.score, equals(2));
+      expect(mood.label, equals('Low'));
+    });
+
+    test('returns null mood when model says signal is insufficient', () async {
+      final service = AiChatService(
+        token: 'test-token',
+        client: MockClient((_) async {
+          return http.Response(
+            jsonEncode({
+              'choices': [
+                {
+                  'message': {'content': '{"score": null}'},
+                },
+              ],
+            }),
+            200,
+          );
+        }),
+      );
+
+      final mood = await service.inferMood([
+        'hey',
+      ]);
+
+      expect(mood, isNull);
     });
   });
 }

@@ -28,12 +28,12 @@ class AiChatScreen extends StatefulWidget {
   State<AiChatScreen> createState() => _AiChatScreenState();
 }
 
-class _AiChatScreenState extends State<AiChatScreen> {
+class _AiChatScreenState extends State<AiChatScreen>
+    with WidgetsBindingObserver {
   final List<Message> _messages = [];
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final AiChatService _aiChatService = AiChatService();
-  final ChatMoodService _chatMoodService = ChatMoodService();
   bool _isLoading = false;
   ChatMoodSnapshot? _detectedMood;
   Recommendation? _recommendation;
@@ -41,42 +41,77 @@ class _AiChatScreenState extends State<AiChatScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _addWelcomeMessage();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _dismissKeyboard();
     _messageController.dispose();
     _scrollController.dispose();
     _aiChatService.close();
     super.dispose();
   }
 
+  @override
+  void reassemble() {
+    _dismissKeyboard();
+    super.reassemble();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused) {
+      _dismissKeyboard();
+    }
+  }
+
   void _addWelcomeMessage() {
-    _messages.add(Message(
-      text: 'Hello! I\'m here to listen and help you reflect on your thoughts. How are you feeling today?',
-      isUser: false,
-      timestamp: DateTime.now(),
-    ));
+    _messages.add(
+      Message(
+        text:
+            'Hello! I\'m here to listen and help you reflect on your thoughts. How are you feeling today?',
+        isUser: false,
+        timestamp: DateTime.now(),
+      ),
+    );
   }
 
   Future<void> _sendMessage() async {
     final text = _messageController.text.trim();
     if (text.isEmpty || _isLoading) return;
+    final history = _messages
+        .map(
+          (message) => AiChatContextMessage(
+            role: message.isUser ? 'user' : 'assistant',
+            content: message.text,
+          ),
+        )
+        .toList();
 
     setState(() {
-      _messages.add(Message(text: text, isUser: true, timestamp: DateTime.now()));
+      _messages.add(
+        Message(text: text, isUser: true, timestamp: DateTime.now()),
+      );
       _isLoading = true;
     });
     _messageController.clear();
     _scrollToBottom();
 
     try {
-      final aiResponse = await _aiChatService.sendMessage(text);
+      final aiResponse = await _aiChatService.sendMessage(
+        text,
+        history: history,
+      );
       if (mounted) {
         await _updateMoodAndRecommendation();
         setState(() {
-          _messages.add(Message(text: aiResponse, isUser: false, timestamp: DateTime.now()));
+          _messages.add(
+            Message(text: aiResponse, isUser: false, timestamp: DateTime.now()),
+          );
           _isLoading = false;
         });
         _scrollToBottom();
@@ -84,11 +119,14 @@ class _AiChatScreenState extends State<AiChatScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _messages.add(Message(
-            text: 'Sorry, I\'m having trouble connecting right now. Let\'s try again later.',
-            isUser: false,
-            timestamp: DateTime.now(),
-          ));
+          _messages.add(
+            Message(
+              text:
+                  'Sorry, I\'m having trouble connecting right now. Let\'s try again later.',
+              isUser: false,
+              timestamp: DateTime.now(),
+            ),
+          );
           _isLoading = false;
         });
         _scrollToBottom();
@@ -108,17 +146,66 @@ class _AiChatScreenState extends State<AiChatScreen> {
     });
   }
 
+  void _dismissKeyboard() {
+    final currentFocus = FocusManager.instance.primaryFocus;
+    if (currentFocus != null) {
+      currentFocus.unfocus();
+    }
+  }
+
+  Future<void> _confirmExitChat() async {
+    _dismissKeyboard();
+    final navigator = Navigator.of(context);
+
+    final shouldExit = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Exit Chat?', style: AppTextStyles.headline3),
+        content: Text(
+          'Are you sure you want to exit the chat? This will delete the chat and its memory.',
+          style: AppTextStyles.body2,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(
+              'Cancel',
+              style: AppTextStyles.label.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(
+              'Exit',
+              style: AppTextStyles.label.copyWith(color: AppColors.error),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (!mounted || shouldExit != true) return;
+    navigator.pop();
+  }
+
   Future<void> _updateMoodAndRecommendation() async {
+    final moodProvider = context.read<MoodProvider>();
+    final streakProvider = context.read<StreakProvider>();
     final userMessages = _messages
         .where((message) => message.isUser)
         .map((message) => message.text)
         .toList();
-    final detectedMood = _chatMoodService.analyzeUserMessages(userMessages);
-    if (detectedMood == null) return;
+    final detectedMood = await _aiChatService.inferMood(userMessages);
+    if (!mounted || detectedMood == null) return;
 
-    await context.read<MoodProvider>().upsertAiChatMood(detectedMood.score);
-    final streakProvider = context.read<StreakProvider>();
-    final recommendation = RecommendationEngine.getRecommendation(
+    await moodProvider.upsertAiChatMood(detectedMood.score);
+    if (!mounted) return;
+
+    final recommendation = RecommendationEngine.getChatRecommendation(
       moodScore: detectedMood.score,
       currentStreak: streakProvider.currentStreak,
       daysLeftToGoal: streakProvider.daysLeftToGoal,
@@ -135,11 +222,11 @@ class _AiChatScreenState extends State<AiChatScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
-        title: const Text('AI Chat', style: AppTextStyles.headline2),
+        title: const Text('Stillspace AI', style: AppTextStyles.headline2),
         centerTitle: false,
         leading: IconButton(
           icon: Icon(Icons.close, color: AppColors.textPrimary),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: _confirmExitChat,
         ),
       ),
       body: Column(
@@ -172,7 +259,9 @@ class _AiChatScreenState extends State<AiChatScreen> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.75,
+        ),
         decoration: BoxDecoration(
           color: message.isUser ? AppColors.primary : AppColors.surface,
           borderRadius: BorderRadius.circular(16),
@@ -180,7 +269,9 @@ class _AiChatScreenState extends State<AiChatScreen> {
         child: Text(
           message.text,
           style: AppTextStyles.body1.copyWith(
-            color: message.isUser ? AppColors.background : AppColors.textPrimary,
+            color: message.isUser
+                ? AppColors.background
+                : AppColors.textPrimary,
           ),
         ),
       ),
@@ -230,9 +321,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.35),
-        ),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.35)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -254,14 +343,17 @@ class _AiChatScreenState extends State<AiChatScreen> {
             children: [
               Expanded(
                 child: Text(
-                  '$sessionLabel • ${recommendation.sessionDuration} min',
+                  '$sessionLabel - ${recommendation.sessionDuration} min',
                   style: AppTextStyles.body1,
                 ),
               ),
               GestureDetector(
                 onTap: () => _startRecommendedSession(recommendation),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primary,
                     borderRadius: BorderRadius.circular(12),
@@ -286,9 +378,8 @@ class _AiChatScreenState extends State<AiChatScreen> {
     if (recommendation.sessionType == SessionType.wimHof) {
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) => const BreathingSessionScreen(
-            session: BreathingSessions.wimHof,
-          ),
+          builder: (_) =>
+              const BreathingSessionScreen(session: BreathingSessions.wimHof),
         ),
       );
       return;
@@ -331,7 +422,10 @@ class _AiChatScreenState extends State<AiChatScreen> {
                   borderRadius: BorderRadius.circular(24),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               ),
               onSubmitted: (_) => _sendMessage(),
             ),
@@ -345,11 +439,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                 color: AppColors.primary,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.send,
-                color: AppColors.background,
-                size: 20,
-              ),
+              child: Icon(Icons.send, color: AppColors.background, size: 20),
             ),
           ),
         ],

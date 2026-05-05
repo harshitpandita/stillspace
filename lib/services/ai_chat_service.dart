@@ -2,16 +2,21 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'chat_mood_service.dart';
+
+class AiChatContextMessage {
+  final String role;
+  final String content;
+
+  const AiChatContextMessage({required this.role, required this.content});
+}
 
 class AiChatService {
-  AiChatService({
-    http.Client? client,
-    String? token,
-    List<String>? modelUrls,
-  })  : _client = client ?? http.Client(),
-        _ownsClient = client == null,
-        _tokenOverride = token,
-        _models = modelUrls ?? _defaultModels;
+  AiChatService({http.Client? client, String? token, List<String>? modelUrls})
+    : _client = client ?? http.Client(),
+      _ownsClient = client == null,
+      _tokenOverride = token,
+      _models = modelUrls ?? _defaultModels;
 
   static const String _hfTokenFromEnvironment = String.fromEnvironment(
     'HUGGING_FACE_TOKEN',
@@ -25,6 +30,7 @@ class AiChatService {
     'Qwen/Qwen2.5-7B-Instruct-1M',
     'meta-llama/Llama-3.1-8B-Instruct',
   ];
+  static const int _maxConversationContextMessages = 8;
   static const String _tryNextModelPrefix = '__try_next_model__:';
 
   final http.Client _client;
@@ -33,7 +39,7 @@ class AiChatService {
   final List<String> _models;
   String? _cachedToken;
 
-static const String _supportPrompt = '''
+  static const String _supportPrompt = '''
 You are Stillspace, a calm mental-wellness reflection companion.
 Respond with warmth, keep replies concise, ask one gentle follow-up question,
 and avoid diagnosis or medical claims. If the user mentions immediate danger,
@@ -43,15 +49,32 @@ Do not reveal internal reasoning. Reply with only the final user-facing message.
 User message:
 ''';
 
-  Future<String> sendMessage(String message) async {
+  static const String _moodInferencePrompt = '''
+You analyze a user's recent reflection chat messages and infer their current mood.
+Use the full context, not keyword matching.
+If there is not enough meaningful emotional signal yet, return:
+{"score": null}
+Otherwise return strict JSON only in this exact shape:
+{"score": 1}
+Where score means:
+1 = Very Low
+2 = Low
+3 = Neutral
+4 = Good
+5 = Great
+Return JSON only. No markdown. No explanation.
+''';
+
+  Future<String> sendMessage(
+    String message, {
+    List<AiChatContextMessage> history = const [],
+  }) async {
     final trimmedMessage = message.trim();
     if (trimmedMessage.isEmpty) {
       return 'Please type something for me to respond to.';
     }
 
-    final headers = <String, String>{
-      'Content-Type': 'application/json',
-    };
+    final headers = <String, String>{'Content-Type': 'application/json'};
     final token = await _resolveToken();
     if (token.isNotEmpty) {
       headers['Authorization'] = 'Bearer $token';
@@ -63,7 +86,12 @@ User message:
 
     String? lastModelError;
     for (final model in _models) {
-      final result = await _tryModel(model, headers, trimmedMessage);
+      final result = await _tryModel(
+        model,
+        headers,
+        trimmedMessage,
+        history: history,
+      );
       if (result != null) {
         if (result.startsWith(_tryNextModelPrefix)) {
           lastModelError = result.substring(_tryNextModelPrefix.length);
@@ -77,6 +105,37 @@ User message:
         'Sorry, I\'m having trouble connecting right now. Please check your internet connection and try again.';
   }
 
+  Future<ChatMoodSnapshot?> inferMood(List<String> userMessages) async {
+    final trimmedMessages = userMessages
+        .map((message) => message.trim())
+        .where((message) => message.isNotEmpty)
+        .toList();
+    if (trimmedMessages.isEmpty) return null;
+
+    final headers = <String, String>{'Content-Type': 'application/json'};
+    final token = await _resolveToken();
+    if (token.isEmpty) return null;
+    headers['Authorization'] = 'Bearer $token';
+
+    final recentMessages = trimmedMessages.length > 6
+        ? trimmedMessages.sublist(trimmedMessages.length - 6)
+        : trimmedMessages;
+    final transcript = recentMessages
+        .asMap()
+        .entries
+        .map((entry) => 'User message ${entry.key + 1}: ${entry.value}')
+        .join('\n');
+
+    for (final model in _models) {
+      final result = await _tryMoodModel(model, headers, transcript);
+      if (result != null) {
+        return result;
+      }
+    }
+
+    return null;
+  }
+
   void close() {
     if (_ownsClient) {
       _client.close();
@@ -86,7 +145,9 @@ User message:
   Future<String> _resolveToken() async {
     final override = _tokenOverride;
     if (override != null) return override.trim();
-    if (_hfTokenFromEnvironment.isNotEmpty) return _hfTokenFromEnvironment.trim();
+    if (_hfTokenFromEnvironment.isNotEmpty) {
+      return _hfTokenFromEnvironment.trim();
+    }
 
     final cached = _cachedToken;
     if (cached != null) return cached;
@@ -126,13 +187,21 @@ User message:
   Future<String?> _tryModel(
     String model,
     Map<String, String> headers,
-    String message,
-  ) async {
+    String message, {
+    List<AiChatContextMessage> history = const [],
+  }) async {
     try {
+      final recentHistory = history.length > _maxConversationContextMessages
+          ? history.sublist(history.length - _maxConversationContextMessages)
+          : history;
+
       final body = jsonEncode({
         'model': model,
         'messages': [
           {'role': 'system', 'content': _supportPrompt.trim()},
+          ...recentHistory.map(
+            (entry) => {'role': entry.role, 'content': entry.content},
+          ),
           {'role': 'user', 'content': message},
         ],
         'max_tokens': 160,
@@ -140,11 +209,9 @@ User message:
         'top_p': 0.9,
       });
 
-      final response = await _client.post(
-        Uri.parse(_chatCompletionsUrl),
-        headers: headers,
-        body: body,
-      ).timeout(_requestTimeout);
+      final response = await _client
+          .post(Uri.parse(_chatCompletionsUrl), headers: headers, body: body)
+          .timeout(_requestTimeout);
 
       final responseBody = response.body.trim();
       if (response.statusCode == 200) {
@@ -178,6 +245,43 @@ User message:
     }
   }
 
+  Future<ChatMoodSnapshot?> _tryMoodModel(
+    String model,
+    Map<String, String> headers,
+    String transcript,
+  ) async {
+    try {
+      final body = jsonEncode({
+        'model': model,
+        'messages': [
+          {'role': 'system', 'content': _moodInferencePrompt.trim()},
+          {'role': 'user', 'content': transcript},
+        ],
+        'max_tokens': 40,
+        'temperature': 0.1,
+        'top_p': 0.9,
+      });
+
+      final response = await _client
+          .post(Uri.parse(_chatCompletionsUrl), headers: headers, body: body)
+          .timeout(_requestTimeout);
+
+      final responseBody = response.body.trim();
+      if (response.statusCode == 200) {
+        return _parseMoodSnapshot(responseBody);
+      }
+      if (response.statusCode == 400 ||
+          response.statusCode == 404 ||
+          response.statusCode == 503) {
+        return null;
+      }
+
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   String _readApiError(String responseBody, {required String fallback}) {
     if (responseBody.isEmpty) return fallback;
 
@@ -189,7 +293,9 @@ User message:
         if (error is Map && error['message'] is String) {
           return (error['message'] as String).trim();
         }
-        if (data['message'] is String) return (data['message'] as String).trim();
+        if (data['message'] is String) {
+          return (data['message'] as String).trim();
+        }
       }
     } catch (e) {
       return responseBody.length > 220
@@ -209,8 +315,7 @@ User message:
         data['choices'] is List &&
         (data['choices'] as List).isNotEmpty) {
       final firstChoice = (data['choices'] as List).first;
-      if (firstChoice is Map &&
-          firstChoice['message'] is Map) {
+      if (firstChoice is Map && firstChoice['message'] is Map) {
         final message = firstChoice['message'] as Map;
         content = _extractMessageContent(message['content']);
       }
@@ -219,6 +324,44 @@ User message:
     final text = content?.trim();
     if (text == null || text.isEmpty) return null;
     return _stripReasoningText(text);
+  }
+
+  ChatMoodSnapshot? _parseMoodSnapshot(String responseBody) {
+    final content = _parseChatCompletion(responseBody);
+    if (content == null || content.isEmpty) return null;
+
+    final cleaned = _extractJsonObject(content);
+    if (cleaned == null) return null;
+
+    try {
+      final data = jsonDecode(cleaned);
+      if (data is! Map) return null;
+      final score = data['score'];
+      if (score == null) return null;
+      if (score is! int || score < 1 || score > 5) return null;
+
+      return ChatMoodSnapshot(
+        score: score,
+        label: ChatMoodSnapshot.labelForScore(score),
+      );
+    } catch (e) {
+      return null;
+    }
+  }
+
+  String? _extractJsonObject(String text) {
+    final trimmed = text.trim();
+    final fenced = RegExp(
+      r'```(?:json)?\s*([\s\S]*?)```',
+      caseSensitive: false,
+    ).firstMatch(trimmed);
+    final candidate = fenced != null ? fenced.group(1)?.trim() : trimmed;
+    if (candidate == null) return null;
+
+    final start = candidate.indexOf('{');
+    final end = candidate.lastIndexOf('}');
+    if (start == -1 || end == -1 || end <= start) return null;
+    return candidate.substring(start, end + 1);
   }
 
   String? _extractMessageContent(Object? rawContent) {
@@ -259,11 +402,11 @@ User message:
     if (danglingThinkIndex != -1) {
       cleaned = cleaned.substring(danglingThinkIndex + '</think>'.length);
     }
-    final danglingThinkingIndex = cleaned.toLowerCase().lastIndexOf('</thinking>');
+    final danglingThinkingIndex = cleaned.toLowerCase().lastIndexOf(
+      '</thinking>',
+    );
     if (danglingThinkingIndex != -1) {
-      cleaned = cleaned.substring(
-        danglingThinkingIndex + '</thinking>'.length,
-      );
+      cleaned = cleaned.substring(danglingThinkingIndex + '</thinking>'.length);
     }
 
     cleaned = cleaned.trim();

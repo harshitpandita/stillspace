@@ -26,11 +26,6 @@ class JournalListScreen extends StatelessWidget {
         title: const Text('Journal', style: AppTextStyles.headline2),
         centerTitle: false,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.chat_bubble_outline, color: AppColors.primary),
-            onPressed: () => _openAiChat(context),
-            tooltip: 'AI Chat',
-          ),
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: _buildStreakBadge(context, streakProvider),
@@ -38,10 +33,40 @@ class JournalListScreen extends StatelessWidget {
         ],
       ),
       body: entries.isEmpty ? _buildEmptyState(context) : _buildEntryList(context, entries),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _openNewEntry(context),
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add, color: AppColors.background),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            heroTag: 'journal_add_fab',
+            onPressed: () => _openNewEntry(context),
+            backgroundColor: AppColors.primary,
+            child: const Icon(Icons.add, color: AppColors.background),
+          ),
+          const SizedBox(height: 12),
+          FloatingActionButton.extended(
+            heroTag: 'journal_ai_chat_fab',
+            onPressed: () => _openAiChat(context),
+            backgroundColor: AppColors.primary.withValues(alpha: 0.16),
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(
+                color: AppColors.primary.withValues(alpha: 0.75),
+                width: 1.5,
+              ),
+            ),
+            icon: const Icon(
+              Icons.chat_bubble_outline,
+              color: AppColors.primary,
+            ),
+            label: Text(
+              'Stillspace AI',
+              style: AppTextStyles.label.copyWith(color: AppColors.primary),
+            ),
+          ),
+        ],
       ),
     );
   }

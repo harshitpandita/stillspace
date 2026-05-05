@@ -134,6 +134,111 @@ class RecommendationEngine {
     );
   }
 
+  static Recommendation getChatRecommendation({
+    int? moodScore,
+    required int currentStreak,
+    required int daysLeftToGoal,
+    required bool missedYesterday,
+    DateTime? now,
+  }) {
+    if (moodScore == null) {
+      return getRecommendation(
+        moodScore: null,
+        currentStreak: currentStreak,
+        daysLeftToGoal: daysLeftToGoal,
+        missedYesterday: missedYesterday,
+        now: now,
+      );
+    }
+
+    final currentTime = now ?? DateTime.now();
+    final hour = currentTime.hour;
+    final isBeforeNoon = hour >= 5 && hour < 12;
+    final isMorning = hour >= 5 && hour < 10;
+    final isEvening = hour >= 20 || hour < 5;
+    final isLateEvening = hour >= 20;
+
+    if (moodScore <= 2) {
+      return Recommendation(
+        sessionDuration: 5,
+        sessionType: SessionType.calming,
+        promptMessage: missedYesterday
+            ? 'You sound like you need a gentler restart. Let\'s keep today light and steady.'
+            : 'You sound like you need something gentle. A short calming session fits here.',
+        journalPrompt:
+            AppConstants.lowMoodJournalPrompts[currentTime.millisecond %
+                AppConstants.lowMoodJournalPrompts.length],
+        urgency: Urgency.medium,
+      );
+    }
+
+    if (moodScore == 3) {
+      if (isBeforeNoon || isLateEvening) {
+        return Recommendation(
+          sessionDuration: 10,
+          sessionType: SessionType.wimHof,
+          promptMessage:
+              'You sound a little in-between. Breathwork could help shift your state.',
+          journalPrompt: 'What feels most present for you right now?',
+          urgency: Urgency.medium,
+        );
+      }
+
+      return Recommendation(
+        sessionDuration: 10,
+        sessionType: SessionType.standard,
+        promptMessage:
+            'You sound fairly steady. A simple mindfulness session would fit well.',
+        journalPrompt: 'What would make the rest of today feel a little better?',
+        urgency: Urgency.low,
+      );
+    }
+
+    if (moodScore >= 4 && currentStreak >= 7) {
+      return Recommendation(
+        sessionDuration: 15,
+        sessionType: SessionType.focus,
+        promptMessage:
+            'You sound strong today. This could be a good moment for a deeper session.',
+        journalPrompt: 'What is helping you feel grounded today?',
+        urgency: Urgency.low,
+      );
+    }
+
+    if (moodScore >= 4 && isMorning) {
+      return Recommendation(
+        sessionDuration: 10,
+        sessionType: SessionType.energizing,
+        promptMessage:
+            'You sound ready to move. An energizing session would match that well.',
+        journalPrompt: 'What do you want to carry into the rest of the day?',
+        urgency: Urgency.low,
+      );
+    }
+
+    if (moodScore >= 4 && isEvening) {
+      return Recommendation(
+        sessionDuration: 10,
+        sessionType: SessionType.windDown,
+        promptMessage:
+            'You sound good. A smooth wind-down could help you end the day well.',
+        journalPrompt: 'What felt especially good about today?',
+        urgency: Urgency.low,
+      );
+    }
+
+    return Recommendation(
+      sessionDuration: 10,
+      sessionType: SessionType.focus,
+      promptMessage:
+          daysLeftToGoal <= 3
+              ? 'You sound ready. Let\'s use that energy and keep your momentum going.'
+              : 'You sound ready for something a little more active and focused.',
+      journalPrompt: 'What are you feeling more ready for right now?',
+      urgency: Urgency.low,
+    );
+  }
+
   static String _goalCloseMessage(int daysLeft) {
     if (daysLeft == 1) {
       return 'One day left! You\'re about to complete your goal.';

@@ -194,5 +194,40 @@ void main() {
         equals('Wim Hof Breathing'),
       );
     });
+
+    test('chat recommendation changes when mood becomes strongly positive', () {
+      final lowMoodRecommendation = RecommendationEngine.getChatRecommendation(
+        moodScore: 1,
+        currentStreak: 2,
+        daysLeftToGoal: 12,
+        missedYesterday: true,
+        now: neutralTime,
+      );
+      final highMoodRecommendation = RecommendationEngine.getChatRecommendation(
+        moodScore: 5,
+        currentStreak: 2,
+        daysLeftToGoal: 12,
+        missedYesterday: true,
+        now: neutralTime,
+      );
+
+      expect(lowMoodRecommendation.sessionType, equals(SessionType.calming));
+      expect(lowMoodRecommendation.sessionDuration, equals(5));
+      expect(highMoodRecommendation.sessionType, isNot(equals(SessionType.calming)));
+      expect(highMoodRecommendation.sessionDuration, isNot(equals(5)));
+    });
+
+    test('chat recommendation keeps neutral mood more balanced', () {
+      final recommendation = RecommendationEngine.getChatRecommendation(
+        moodScore: 3,
+        currentStreak: 2,
+        daysLeftToGoal: 12,
+        missedYesterday: false,
+        now: neutralTime,
+      );
+
+      expect(recommendation.sessionType, equals(SessionType.standard));
+      expect(recommendation.sessionDuration, equals(10));
+    });
   });
 }

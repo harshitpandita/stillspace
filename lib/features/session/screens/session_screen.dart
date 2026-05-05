@@ -180,12 +180,13 @@ class _SessionScreenState extends State<SessionScreen> with TickerProviderStateM
         leading: IconButton(
           icon: const Icon(Icons.close, color: AppColors.textPrimary),
           onPressed: () async {
+            final navigator = Navigator.of(context);
             _stopTimer();
             _breathController.stop();
             await _audioService.stopAll();
             _sessionProvider.resetSession();
             await _restoreNotifications();
-            if (mounted) Navigator.of(context).pop();
+            if (mounted) navigator.pop();
           },
         ),
         title: Text(
