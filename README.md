@@ -1,6 +1,6 @@
 # Stillspace
 
-Stillspace is a dark-themed Flutter mental wellness app for building a consistent mindfulness habit. It combines meditation sessions, guided breathing, background music, mood tracking, journaling, streaks, reminders, progress charts, and offline-first storage.
+Stillspace is a dark-themed Flutter mental wellness app for building a consistent mindfulness habit. It combines meditation sessions, guided breathing, AI reflection chat, background music, mood tracking, journaling, streaks, reminders, progress charts, and offline-first storage with optional cloud backup.
 
 ## Features
 
@@ -21,14 +21,21 @@ Stillspace is a dark-themed Flutter mental wellness app for building a consisten
 ### Mood, Journal, and Learn
 - Mood check-in on app open when needed, with a 2-hour cooldown
 - 5-point emoji mood selector
+- Stillspace AI chat inside Journal for reflective conversation
+- Context-aware AI chat replies using recent chat memory
+- AI mood detection from reflection messages
+- In-chat session recommendations based on detected mood
+- Exit confirmation before deleting an AI chat and its memory
 - Reflective journaling with guided prompts and mood tags
 - Local-only journal images from camera or gallery
+- Improved Stillspace AI journal entry button UI
 - Offline Learn Meditation section with practical articles
 - Daily wisdom card with cached ZenQuotes API fallback and hardcoded offline quotes
 
 ### Progress and Consistency
 - Streak system for completed meditation sessions or journal entries
 - Streak freeze support
+- Recommendation engine adapts to mood, streaks, missed days, time of day, and goal proximity
 - Context-aware reminders and follow-ups
 - 30-day streak calendar
 - 7-day mood trend chart
@@ -38,7 +45,15 @@ Stillspace is a dark-themed Flutter mental wellness app for building a consisten
 - Offline-first data storage with Hive
 - Optional Google Sign-In
 - Firestore sync on changes and once per day on app open
+- Cloud data restores immediately when signing in during onboarding
+- Manual sync merges cloud data into local state before pushing changes back up
 - Local data remains usable without internet
+- Journal photos remain device-local and are excluded from cloud sync
+
+### Onboarding and Walkthrough
+- Multi-step onboarding for name, goal, reminders, and welcome
+- Optional Google sign-in during onboarding
+- Feature walkthrough that now includes Stillspace AI and adaptive recommendations
 
 ## Screenshots
 
@@ -110,6 +125,8 @@ Stillspace uses a rule-based recommendation engine that considers:
 - whether yesterday was missed
 - time of day
 
+The app also has a separate chat recommendation path used by Stillspace AI, where recommendations are adjusted from mood inferred from the current conversation.
+
 Current priority order:
 
 1. Goal is close, 3 days or fewer left: urgent focus session
@@ -120,6 +137,15 @@ Current priority order:
 6. Evening: wind-down session
 7. Morning: energizing session
 8. Default: standard mindfulness session
+
+For AI chat specifically:
+
+1. Very low mood: short calming session
+2. Neutral mood in energizing windows: Wim Hof breathing
+3. Strong mood with a solid streak: deeper focus session
+4. Higher mood in the morning: energizing session
+5. Higher mood in the evening: wind-down session
+6. Otherwise: standard or focus recommendation depending on momentum
 
 ## Audio Notes
 
@@ -173,6 +199,8 @@ Current automated coverage includes:
 
 - PrimaryActionButton widget tests
 - RecommendationEngine unit tests
+- Deterministic recommendation timing behavior
+- Wim Hof recommendation cases
 
 ## Author
 
