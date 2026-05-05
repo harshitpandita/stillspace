@@ -10,6 +10,7 @@ class NotificationService {
   NotificationService._internal();
 
   final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
+  bool _quietModeActive = false;
 
   static const int _mainReminderId = 1;
   static const int _followUp1Id = 2;
@@ -72,6 +73,34 @@ class NotificationService {
     return false;
   }
 
+  bool get quietModeActive => _quietModeActive;
+
+  Future<void> enterQuietMode() async {
+    _quietModeActive = true;
+    await cancelAllNotifications();
+  }
+
+  Future<void> exitQuietMode({
+    required bool notificationsEnabled,
+    required String time,
+    required int currentStreak,
+    required int daysLeftToGoal,
+    required bool missedYesterday,
+  }) async {
+    _quietModeActive = false;
+
+    if (notificationsEnabled) {
+      await scheduleDailyReminder(
+        time: time,
+        currentStreak: currentStreak,
+        daysLeftToGoal: daysLeftToGoal,
+        missedYesterday: missedYesterday,
+      );
+    } else {
+      await cancelAllNotifications();
+    }
+  }
+
   void _onNotificationTapped(NotificationResponse response) {
     // Handle notification tap - app will open naturally
   }
@@ -82,6 +111,10 @@ class NotificationService {
     required int daysLeftToGoal,
     required bool missedYesterday,
   }) async {
+    if (_quietModeActive) {
+      return;
+    }
+
     try {
       await cancelAllNotifications();
 

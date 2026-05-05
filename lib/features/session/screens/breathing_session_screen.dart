@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../providers/streak_provider.dart';
+import '../../../providers/user_provider.dart';
 import '../../../services/audio_service.dart';
 import '../../../services/notification_service.dart';
 import '../../../widgets/primary_action_button.dart';
@@ -34,6 +35,7 @@ class _BreathingSessionScreenState extends State<BreathingSessionScreen>
   bool _isRunning = false;
   bool _isComplete = false;
   bool _isPaused = false;
+  bool _quietModeActive = false;
   late AnimationController _breathController;
 
   @override
@@ -50,6 +52,9 @@ class _BreathingSessionScreenState extends State<BreathingSessionScreen>
     _posSub?.cancel();
     _stateSub?.cancel();
     _stopFallbackTimer();
+    if (_quietModeActive) {
+      unawaited(_restoreNotifications());
+    }
     _breathController.dispose();
     _audio.stopGuided();
     super.dispose();
@@ -61,6 +66,9 @@ class _BreathingSessionScreenState extends State<BreathingSessionScreen>
       ..reset()
       ..start();
     _lastAudioPositionAt = DateTime.now();
+
+    await NotificationService().enterQuietMode();
+    _quietModeActive = true;
 
     setState(() {
       _isRunning = true;
@@ -125,6 +133,7 @@ class _BreathingSessionScreenState extends State<BreathingSessionScreen>
         .read<StreakProvider>()
         .incrementStreak(sessionMinutes: widget.session.streakMinutes);
     await NotificationService().cancelFollowUpNotifications();
+    await _restoreNotifications();
   }
 
   String _formatTime(Duration d) {
@@ -171,6 +180,23 @@ class _BreathingSessionScreenState extends State<BreathingSessionScreen>
     _fallbackTimer = null;
   }
 
+  Future<void> _restoreNotifications() async {
+    if (!_quietModeActive) return;
+
+    final userProvider = context.read<UserProvider>();
+    final streakProvider = context.read<StreakProvider>();
+
+    await NotificationService().exitQuietMode(
+      notificationsEnabled: userProvider.notificationsEnabled,
+      time: userProvider.notificationTime,
+      currentStreak: streakProvider.currentStreak,
+      daysLeftToGoal: streakProvider.daysLeftToGoal,
+      missedYesterday: streakProvider.missedYesterday,
+    );
+
+    _quietModeActive = false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -181,6 +207,7 @@ class _BreathingSessionScreenState extends State<BreathingSessionScreen>
           icon: const Icon(Icons.close, color: AppColors.textPrimary),
           onPressed: () async {
             await _audio.stopGuided();
+            await _restoreNotifications();
             if (context.mounted) Navigator.of(context).pop();
           },
         ),

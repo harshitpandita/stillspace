@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../providers/streak_provider.dart';
+import '../../../providers/user_provider.dart';
 import '../../../services/notification_service.dart';
 import '../../../services/audio_service.dart';
 import '../../../widgets/primary_action_button.dart';
@@ -30,6 +31,7 @@ class _SessionScreenState extends State<SessionScreen> with TickerProviderStateM
   Timer? _timer;
   bool _isRunning = false;
   bool _isComplete = false;
+  bool _quietModeActive = false;
   late AnimationController _breathController;
 
   double _volume = 0.5;
@@ -48,6 +50,9 @@ class _SessionScreenState extends State<SessionScreen> with TickerProviderStateM
   @override
   void dispose() {
     _stopTimer();
+    if (_quietModeActive) {
+      unawaited(_restoreNotifications());
+    }
     _breathController.dispose();
     _audioService.stopAll();
     super.dispose();
@@ -56,6 +61,23 @@ class _SessionScreenState extends State<SessionScreen> with TickerProviderStateM
   void _stopTimer() {
     _timer?.cancel();
     _timer = null;
+  }
+
+  Future<void> _restoreNotifications() async {
+    if (!_quietModeActive) return;
+
+    final userProvider = context.read<UserProvider>();
+    final streakProvider = context.read<StreakProvider>();
+
+    await NotificationService().exitQuietMode(
+      notificationsEnabled: userProvider.notificationsEnabled,
+      time: userProvider.notificationTime,
+      currentStreak: streakProvider.currentStreak,
+      daysLeftToGoal: streakProvider.daysLeftToGoal,
+      missedYesterday: streakProvider.missedYesterday,
+    );
+
+    _quietModeActive = false;
   }
 
   void _tick() {
@@ -68,8 +90,11 @@ class _SessionScreenState extends State<SessionScreen> with TickerProviderStateM
     }
   }
 
-  void _startSession() {
+  Future<void> _startSession() async {
     _stopTimer();
+
+    await NotificationService().enterQuietMode();
+    _quietModeActive = true;
 
     setState(() => _isRunning = true);
     _breathController.repeat(reverse: true);
@@ -117,6 +142,7 @@ class _SessionScreenState extends State<SessionScreen> with TickerProviderStateM
 
     await context.read<StreakProvider>().incrementStreak(sessionMinutes: widget.duration);
     await NotificationService().cancelFollowUpNotifications();
+    await _restoreNotifications();
   }
 
   String _formatTime(int seconds) {
@@ -135,10 +161,12 @@ class _SessionScreenState extends State<SessionScreen> with TickerProviderStateM
         backgroundColor: AppColors.background,
         leading: IconButton(
           icon: const Icon(Icons.close, color: AppColors.textPrimary),
-          onPressed: () {
+          onPressed: () async {
             _stopTimer();
-            _audioService.stopAll();
-            Navigator.of(context).pop();
+            _breathController.stop();
+            await _audioService.stopAll();
+            await _restoreNotifications();
+            if (mounted) Navigator.of(context).pop();
           },
         ),
         title: Text(
@@ -165,6 +193,11 @@ class _SessionScreenState extends State<SessionScreen> with TickerProviderStateM
                 const SizedBox(height: 16),
               ],
 
+              if (!_isComplete) ...[
+                _buildQuietModeNote(),
+                const SizedBox(height: 16),
+              ],
+
               // Action button
               if (_isComplete)
                 PrimaryActionButton(
@@ -185,6 +218,40 @@ class _SessionScreenState extends State<SessionScreen> with TickerProviderStateM
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildQuietModeNote() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.do_not_disturb_on, color: AppColors.primary, size: 24),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Quiet session mode',
+                  style: AppTextStyles.label.copyWith(color: AppColors.primary),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'During your session, Stillspace keeps distractions quiet on Android and reminds you when the session ends.',
+                  style: AppTextStyles.body2.copyWith(color: AppColors.textSecondary),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
