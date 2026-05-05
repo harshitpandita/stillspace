@@ -10,6 +10,7 @@ class UserProvider extends ChangeNotifier {
   int _goalDays = 21;
   String _notificationTime = '09:00';
   bool _notificationsEnabled = true;
+  bool _quietModeEnabled = true;
 
   bool get isOnboardingComplete => _isOnboardingComplete;
   bool get hasSeenWalkthrough => _hasSeenWalkthrough;
@@ -17,6 +18,7 @@ class UserProvider extends ChangeNotifier {
   int get goalDays => _goalDays;
   String get notificationTime => _notificationTime;
   bool get notificationsEnabled => _notificationsEnabled;
+  bool get quietModeEnabled => _quietModeEnabled;
 
   Future<void> init() async {
     final box = Hive.box(AppConstants.hiveBoxUserProfile);
@@ -26,6 +28,7 @@ class UserProvider extends ChangeNotifier {
     _goalDays = box.get('goalDays', defaultValue: 21);
     _notificationTime = box.get('notificationTime', defaultValue: '09:00');
     _notificationsEnabled = box.get('notificationsEnabled', defaultValue: true);
+    _quietModeEnabled = box.get('quietModeEnabled', defaultValue: true);
     notifyListeners();
   }
 
@@ -40,12 +43,14 @@ class UserProvider extends ChangeNotifier {
     await box.put('goalDays', goalDays);
     await box.put('notificationTime', notificationTime);
     await box.put('notificationsEnabled', true);
+    await box.put('quietModeEnabled', true);
 
     _isOnboardingComplete = true;
     _userName = name;
     _goalDays = goalDays;
     _notificationTime = notificationTime;
     _notificationsEnabled = true;
+    _quietModeEnabled = true;
     notifyListeners();
   }
 
@@ -60,6 +65,13 @@ class UserProvider extends ChangeNotifier {
     final box = Hive.box(AppConstants.hiveBoxUserProfile);
     await box.put('notificationsEnabled', enabled);
     _notificationsEnabled = enabled;
+    notifyListeners();
+  }
+
+  Future<void> setQuietModeEnabled(bool enabled) async {
+    final box = Hive.box(AppConstants.hiveBoxUserProfile);
+    await box.put('quietModeEnabled', enabled);
+    _quietModeEnabled = enabled;
     notifyListeners();
   }
 

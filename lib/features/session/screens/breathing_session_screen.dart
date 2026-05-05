@@ -6,8 +6,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../providers/streak_provider.dart';
-import '../../../providers/user_provider.dart';
-import '../../../services/audio_service.dart';
+import '../../../providers/user_provider.dart';import '../../../providers/user_provider.dart';import '../../../services/audio_service.dart';
 import '../../../services/notification_service.dart';
 import '../../../widgets/primary_action_button.dart';
 import '../models/breathing_session.dart';
@@ -69,6 +68,12 @@ class _BreathingSessionScreenState extends State<BreathingSessionScreen>
 
     await NotificationService().enterQuietMode();
     _quietModeActive = true;
+
+    final userProvider = context.read<UserProvider>();
+    if (userProvider.quietModeEnabled) {
+      await NotificationService().enterQuietMode();
+      _quietModeActive = true;
+    }
 
     setState(() {
       _isRunning = true;

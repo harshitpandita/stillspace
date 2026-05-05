@@ -15,6 +15,7 @@ class NotificationService {
   static const int _mainReminderId = 1;
   static const int _followUp1Id = 2;
   static const int _followUp2Id = 3;
+  static const int _quietModeNotificationId = 10;
   static const int _testNotificationId = 99;
 
   Future<void> init() async {
@@ -78,6 +79,7 @@ class NotificationService {
   Future<void> enterQuietMode() async {
     _quietModeActive = true;
     await cancelAllNotifications();
+    await _showQuietModeNotification();
   }
 
   Future<void> exitQuietMode({
@@ -87,6 +89,7 @@ class NotificationService {
     required int daysLeftToGoal,
     required bool missedYesterday,
   }) async {
+    await cancelQuietModeNotification();
     _quietModeActive = false;
 
     if (notificationsEnabled) {
@@ -262,6 +265,39 @@ class NotificationService {
       await _notifications.cancelAll();
     } catch (e) {
       // Cancel failed silently
+    }
+  }
+
+  Future<void> cancelQuietModeNotification() async {
+    try {
+      await _notifications.cancel(_quietModeNotificationId);
+    } catch (e) {
+      // Cancel failed silently
+    }
+  }
+
+  Future<void> _showQuietModeNotification() async {
+    try {
+      const androidDetails = AndroidNotificationDetails(
+        'stillspace_quiet_mode',
+        'Quiet Mode',
+        channelDescription: 'Shows when Stillspace is silencing notifications during a session',
+        importance: Importance.low,
+        priority: Priority.low,
+        icon: '@mipmap/ic_launcher',
+        ongoing: true,
+        onlyAlertOnce: true,
+      );
+
+      const details = NotificationDetails(android: androidDetails);
+      await _notifications.show(
+        _quietModeNotificationId,
+        'Quiet mode active',
+        'Stillspace is keeping reminders quiet while your session is in progress.',
+        details,
+      );
+    } catch (e) {
+      // Quiet mode notification failed silently
     }
   }
 

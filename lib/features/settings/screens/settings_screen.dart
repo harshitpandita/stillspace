@@ -8,6 +8,7 @@ import '../../../providers/user_provider.dart';
 import '../../../providers/streak_provider.dart';
 import '../../../providers/mood_provider.dart';
 import '../../../providers/journal_provider.dart';
+import '../../../providers/session_provider.dart';
 import '../../../services/notification_service.dart';
 import '../../../services/firebase_service.dart';
 import '../../walkthrough/screens/walkthrough_screen.dart';
@@ -41,6 +42,8 @@ class SettingsScreen extends StatelessWidget {
               _buildSectionHeader('Notifications'),
               const SizedBox(height: 12),
               _NotificationToggleTile(),
+              const SizedBox(height: 12),
+              _QuietModeToggleTile(),
               const SizedBox(height: 12),
               _ReminderTimeTile(),
               const SizedBox(height: 12),
@@ -197,6 +200,65 @@ class _NotificationToggleTile extends StatelessWidget {
                 );
               } else {
                 await NotificationService().cancelAllNotifications();
+              }
+            },
+            activeThumbColor: AppColors.primary,
+            activeTrackColor: AppColors.primary.withValues(alpha: 0.3),
+            inactiveThumbColor: AppColors.textSecondary,
+            inactiveTrackColor: AppColors.background,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuietModeToggleTile extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final userProvider = context.watch<UserProvider>();
+    final streakProvider = context.read<StreakProvider>();
+    final sessionProvider = context.read<SessionProvider>();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.do_not_disturb_on_outlined, color: AppColors.primary, size: 24),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Quiet session mode', style: AppTextStyles.body1),
+                const SizedBox(height: 2),
+                Text(
+                  userProvider.quietModeEnabled
+                      ? 'Silences Stillspace reminders during active sessions.'
+                      : 'Reminders remain active even when a session is running.',
+                  style: AppTextStyles.caption,
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: userProvider.quietModeEnabled,
+            onChanged: (value) async {
+              await userProvider.setQuietModeEnabled(value);
+              if (!value && NotificationService().quietModeActive) {
+                await NotificationService().exitQuietMode(
+                  notificationsEnabled: userProvider.notificationsEnabled,
+                  time: userProvider.notificationTime,
+                  currentStreak: streakProvider.currentStreak,
+                  daysLeftToGoal: streakProvider.daysLeftToGoal,
+                  missedYesterday: streakProvider.missedYesterday,
+                );
+              } else if (value && sessionProvider.isSessionActive && !NotificationService().quietModeActive) {
+                await NotificationService().enterQuietMode();
               }
             },
             activeThumbColor: AppColors.primary,

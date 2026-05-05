@@ -93,8 +93,11 @@ class _SessionScreenState extends State<SessionScreen> with TickerProviderStateM
   Future<void> _startSession() async {
     _stopTimer();
 
-    await NotificationService().enterQuietMode();
-    _quietModeActive = true;
+    final userProvider = context.read<UserProvider>();
+    if (userProvider.quietModeEnabled) {
+      await NotificationService().enterQuietMode();
+      _quietModeActive = true;
+    }
 
     setState(() => _isRunning = true);
     _breathController.repeat(reverse: true);
