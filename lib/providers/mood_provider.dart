@@ -65,6 +65,7 @@ class MoodProvider extends ChangeNotifier {
     _moodLogs = data.map((e) {
       final map = Map<String, dynamic>.from(e as Map);
       map['timestamp'] = DateTime.parse(map['timestamp'] as String);
+      map['source'] = map['source'] ?? 'manual';
       return map;
     }).toList();
 
@@ -82,6 +83,7 @@ class MoodProvider extends ChangeNotifier {
         'score': log['score'],
         'timestamp': (log['timestamp'] as DateTime).toIso8601String(),
         'note': log['note'],
+        'source': log['source'] ?? 'manual',
       };
     }).toList();
     await box.put('logs', data);
@@ -103,13 +105,46 @@ class MoodProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> logMood(int score, {String? note}) async {
+  Future<void> logMood(int score, {String? note, String source = 'manual'}) async {
     final now = DateTime.now();
     _moodLogs.insert(0, {
       'score': score,
       'timestamp': now,
       'note': note,
+      'source': source,
     });
+    _lastLogTime = now;
+    _todaysMood = score;
+
+    await _saveToHive();
+    notifyListeners();
+    FirebaseService().syncOnChange();
+  }
+
+  Future<void> upsertAiChatMood(int score) async {
+    final now = DateTime.now();
+    final todayKey = _dateKey(now);
+    final existingIndex = _moodLogs.indexWhere((log) {
+      final timestamp = log['timestamp'] as DateTime;
+      return (log['source'] ?? 'manual') == 'ai_chat' &&
+          _dateKey(timestamp) == todayKey;
+    });
+
+    final aiMoodLog = <String, dynamic>{
+      'score': score,
+      'timestamp': now,
+      'note': 'Detected from AI reflection chat',
+      'source': 'ai_chat',
+    };
+
+    if (existingIndex == -1) {
+      _moodLogs.insert(0, aiMoodLog);
+    } else {
+      _moodLogs[existingIndex] = aiMoodLog;
+      _moodLogs.sort((a, b) =>
+          (b['timestamp'] as DateTime).compareTo(a['timestamp'] as DateTime));
+    }
+
     _lastLogTime = now;
     _todaysMood = score;
 

@@ -5,8 +5,10 @@ import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../providers/session_provider.dart';
 import '../../../providers/streak_provider.dart';
-import '../../../providers/user_provider.dart';import '../../../providers/user_provider.dart';import '../../../services/audio_service.dart';
+import '../../../providers/user_provider.dart';
+import '../../../services/audio_service.dart';
 import '../../../services/notification_service.dart';
 import '../../../widgets/primary_action_button.dart';
 import '../models/breathing_session.dart';
@@ -36,6 +38,9 @@ class _BreathingSessionScreenState extends State<BreathingSessionScreen>
   bool _isPaused = false;
   bool _quietModeActive = false;
   late AnimationController _breathController;
+  late UserProvider _userProvider;
+  late StreakProvider _streakProvider;
+  late SessionProvider _sessionProvider;
 
   @override
   void initState() {
@@ -47,10 +52,19 @@ class _BreathingSessionScreenState extends State<BreathingSessionScreen>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _userProvider = context.read<UserProvider>();
+    _streakProvider = context.read<StreakProvider>();
+    _sessionProvider = context.read<SessionProvider>();
+  }
+
+  @override
   void dispose() {
     _posSub?.cancel();
     _stateSub?.cancel();
     _stopFallbackTimer();
+    _sessionProvider.resetSession();
     if (_quietModeActive) {
       unawaited(_restoreNotifications());
     }
@@ -65,13 +79,14 @@ class _BreathingSessionScreenState extends State<BreathingSessionScreen>
       ..reset()
       ..start();
     _lastAudioPositionAt = DateTime.now();
+    _sessionProvider.startSession();
 
-    await NotificationService().enterQuietMode();
-    _quietModeActive = true;
-
-    final userProvider = context.read<UserProvider>();
-    if (userProvider.quietModeEnabled) {
+    if (_userProvider.quietModeEnabled) {
       await NotificationService().enterQuietMode();
+      if (!mounted) {
+        _sessionProvider.resetSession();
+        return;
+      }
       _quietModeActive = true;
     }
 
@@ -134,9 +149,8 @@ class _BreathingSessionScreenState extends State<BreathingSessionScreen>
       _isComplete = true;
     });
 
-    await context
-        .read<StreakProvider>()
-        .incrementStreak(sessionMinutes: widget.session.streakMinutes);
+    await _streakProvider.incrementStreak(sessionMinutes: widget.session.streakMinutes);
+    _sessionProvider.endSession();
     await NotificationService().cancelFollowUpNotifications();
     await _restoreNotifications();
   }
@@ -188,15 +202,12 @@ class _BreathingSessionScreenState extends State<BreathingSessionScreen>
   Future<void> _restoreNotifications() async {
     if (!_quietModeActive) return;
 
-    final userProvider = context.read<UserProvider>();
-    final streakProvider = context.read<StreakProvider>();
-
     await NotificationService().exitQuietMode(
-      notificationsEnabled: userProvider.notificationsEnabled,
-      time: userProvider.notificationTime,
-      currentStreak: streakProvider.currentStreak,
-      daysLeftToGoal: streakProvider.daysLeftToGoal,
-      missedYesterday: streakProvider.missedYesterday,
+      notificationsEnabled: _userProvider.notificationsEnabled,
+      time: _userProvider.notificationTime,
+      currentStreak: _streakProvider.currentStreak,
+      daysLeftToGoal: _streakProvider.daysLeftToGoal,
+      missedYesterday: _streakProvider.missedYesterday,
     );
 
     _quietModeActive = false;
@@ -212,6 +223,7 @@ class _BreathingSessionScreenState extends State<BreathingSessionScreen>
           icon: const Icon(Icons.close, color: AppColors.textPrimary),
           onPressed: () async {
             await _audio.stopGuided();
+            _sessionProvider.resetSession();
             await _restoreNotifications();
             if (context.mounted) Navigator.of(context).pop();
           },

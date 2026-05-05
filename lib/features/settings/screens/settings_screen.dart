@@ -199,7 +199,7 @@ class _NotificationToggleTile extends StatelessWidget {
                   missedYesterday: streakProvider.missedYesterday,
                 );
               } else {
-                await NotificationService().cancelAllNotifications();
+                await NotificationService().cancelReminderNotifications();
               }
             },
             activeThumbColor: AppColors.primary,

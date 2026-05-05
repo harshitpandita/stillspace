@@ -78,7 +78,7 @@ class NotificationService {
 
   Future<void> enterQuietMode() async {
     _quietModeActive = true;
-    await cancelAllNotifications();
+    await cancelReminderNotifications();
     await _showQuietModeNotification();
   }
 
@@ -119,7 +119,7 @@ class NotificationService {
     }
 
     try {
-      await cancelAllNotifications();
+      await cancelReminderNotifications();
 
       final timeParts = time.split(':');
       final hour = int.parse(timeParts[0]);
@@ -260,9 +260,20 @@ class NotificationService {
     }
   }
 
+  Future<void> cancelReminderNotifications() async {
+    try {
+      await _notifications.cancel(_mainReminderId);
+      await _notifications.cancel(_followUp1Id);
+      await _notifications.cancel(_followUp2Id);
+    } catch (e) {
+      // Cancel failed silently
+    }
+  }
+
   Future<void> cancelAllNotifications() async {
     try {
       await _notifications.cancelAll();
+      _quietModeActive = false;
     } catch (e) {
       // Cancel failed silently
     }

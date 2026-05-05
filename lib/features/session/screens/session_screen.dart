@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../providers/session_provider.dart';
 import '../../../providers/streak_provider.dart';
 import '../../../providers/user_provider.dart';
 import '../../../services/notification_service.dart';
@@ -36,6 +37,9 @@ class _SessionScreenState extends State<SessionScreen> with TickerProviderStateM
 
   double _volume = 0.5;
   final AudioService _audioService = AudioService();
+  late UserProvider _userProvider;
+  late StreakProvider _streakProvider;
+  late SessionProvider _sessionProvider;
 
   @override
   void initState() {
@@ -48,8 +52,17 @@ class _SessionScreenState extends State<SessionScreen> with TickerProviderStateM
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _userProvider = context.read<UserProvider>();
+    _streakProvider = context.read<StreakProvider>();
+    _sessionProvider = context.read<SessionProvider>();
+  }
+
+  @override
   void dispose() {
     _stopTimer();
+    _sessionProvider.resetSession();
     if (_quietModeActive) {
       unawaited(_restoreNotifications());
     }
@@ -66,15 +79,12 @@ class _SessionScreenState extends State<SessionScreen> with TickerProviderStateM
   Future<void> _restoreNotifications() async {
     if (!_quietModeActive) return;
 
-    final userProvider = context.read<UserProvider>();
-    final streakProvider = context.read<StreakProvider>();
-
     await NotificationService().exitQuietMode(
-      notificationsEnabled: userProvider.notificationsEnabled,
-      time: userProvider.notificationTime,
-      currentStreak: streakProvider.currentStreak,
-      daysLeftToGoal: streakProvider.daysLeftToGoal,
-      missedYesterday: streakProvider.missedYesterday,
+      notificationsEnabled: _userProvider.notificationsEnabled,
+      time: _userProvider.notificationTime,
+      currentStreak: _streakProvider.currentStreak,
+      daysLeftToGoal: _streakProvider.daysLeftToGoal,
+      missedYesterday: _streakProvider.missedYesterday,
     );
 
     _quietModeActive = false;
@@ -93,9 +103,13 @@ class _SessionScreenState extends State<SessionScreen> with TickerProviderStateM
   Future<void> _startSession() async {
     _stopTimer();
 
-    final userProvider = context.read<UserProvider>();
-    if (userProvider.quietModeEnabled) {
+    _sessionProvider.startSession();
+    if (_userProvider.quietModeEnabled) {
       await NotificationService().enterQuietMode();
+      if (!mounted) {
+        _sessionProvider.resetSession();
+        return;
+      }
       _quietModeActive = true;
     }
 
@@ -143,7 +157,8 @@ class _SessionScreenState extends State<SessionScreen> with TickerProviderStateM
       _isComplete = true;
     });
 
-    await context.read<StreakProvider>().incrementStreak(sessionMinutes: widget.duration);
+    await _streakProvider.incrementStreak(sessionMinutes: widget.duration);
+    _sessionProvider.endSession();
     await NotificationService().cancelFollowUpNotifications();
     await _restoreNotifications();
   }
@@ -168,6 +183,7 @@ class _SessionScreenState extends State<SessionScreen> with TickerProviderStateM
             _stopTimer();
             _breathController.stop();
             await _audioService.stopAll();
+            _sessionProvider.resetSession();
             await _restoreNotifications();
             if (mounted) Navigator.of(context).pop();
           },
@@ -248,7 +264,7 @@ class _SessionScreenState extends State<SessionScreen> with TickerProviderStateM
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'During your session, Stillspace keeps distractions quiet on Android and reminds you when the session ends.',
+                  'During your session, Stillspace pauses its practice reminders and restores them when the session ends.',
                   style: AppTextStyles.body2.copyWith(color: AppColors.textSecondary),
                 ),
               ],

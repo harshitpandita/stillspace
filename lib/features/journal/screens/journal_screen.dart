@@ -8,6 +8,7 @@ import '../../../providers/journal_provider.dart';
 import '../../../providers/streak_provider.dart';
 import '../models/journal_entry.dart';
 import 'journal_entry_screen.dart';
+import 'ai_chat_screen.dart';
 
 class JournalListScreen extends StatelessWidget {
   const JournalListScreen({super.key});
@@ -25,6 +26,11 @@ class JournalListScreen extends StatelessWidget {
         title: const Text('Journal', style: AppTextStyles.headline2),
         centerTitle: false,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.chat_bubble_outline, color: AppColors.primary),
+            onPressed: () => _openAiChat(context),
+            tooltip: 'AI Chat',
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: _buildStreakBadge(context, streakProvider),
@@ -249,6 +255,12 @@ class JournalListScreen extends StatelessWidget {
   void _openNewEntry(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => const JournalEntryScreen()),
+    );
+  }
+
+  void _openAiChat(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const AiChatScreen()),
     );
   }
 

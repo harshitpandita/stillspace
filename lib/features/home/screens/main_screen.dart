@@ -72,7 +72,7 @@ class _MainScreenState extends State<MainScreen> {
     final streakProvider = context.read<StreakProvider>();
 
     if (!userProvider.notificationsEnabled) {
-      await NotificationService().cancelAllNotifications();
+      await NotificationService().cancelReminderNotifications();
       return;
     }
 
